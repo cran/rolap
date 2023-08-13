@@ -10,11 +10,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<meta name="author" content="Jose Samos (jsamos@ugr.es)" />
 
-<meta name="date" content="2023-07-28" />
 
-<title>Basics and getting started with the rolap package</title>
+<title>Definition of Role-Playing and Role Dimensions</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1359,28 +1357,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 
 
 
-<style type="text/css">
-
-div.csl-bib-body { }
-div.csl-entry {
-clear: both;
-}
-.hanging div.csl-entry {
-margin-left:2em;
-text-indent:-2em;
-}
-div.csl-left-margin {
-min-width:2em;
-float:left;
-}
-div.csl-right-inline {
-margin-left:2em;
-padding-left:1em;
-}
-div.csl-indent {
-margin-left: 2em;
-}
-</style>
 
 <style type="text/css">body {
 background-color: #fff;
@@ -1574,249 +1550,47 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Basics and getting started with the rolap
-package</h1>
-<h4 class="author">Jose Samos (<a href="mailto:jsamos@ugr.es" class="email">jsamos@ugr.es</a>)</h4>
-<h4 class="date">2023-07-28</h4>
+<h1 class="title toc-ignore">Definition of Role-Playing and Role
+Dimensions</h1>
 
 
 
-<div id="introduction" class="section level1">
-<h1>Introduction</h1>
-<p>The <em>multidimensional data model</em> was defined in the 1990s
-with the aim of supporting data analysis. Data in multidimensional
-systems is obtained from operational systems and is transformed to adapt
-it to the new structure.</p>
-<p>Transformations can be carried out using professional ETL
-(<em>Extract, Transform and Load</em>) tools. Recently, tools aimed at
-end users have emerged, which are also aimed at performing
-transformation operations. All these tools are very useful to carry out
-the transformation process, they provide a development environment to
-define the transformation operations in a general way.</p>
-<p>Frequently, the operations to be performed aim to transform a flat
-table (with data that comes from operational systems) into a ROLAP
-(<em>Relational On-Line Analytical Processing</em>) star database, made
-up of fact and dimension tables, which implements a multidimensional
-system. With the tools mentioned above, this transformation can be
-carried out, but it requires a lot of work.</p>
-<p>The goal of <code>rolap</code> is to define transformations that
-allow you to easily obtain ROLAP star databases, composed by fact and
-dimension tables, from flat tables and to be able to export them in
-various formats to be used by OLAP query tools.</p>
-<p>The rest of this document is structured as follows: First, basic
-concepts of dimensional modelling and star databases are summarized. The
-following is an illustrative example of how the package works, to show
-usage of features it offers. Finally, the document ends with conclusions
-and bibliography.</p>
+<div id="role-playing-and-role-dimensions" class="section level1">
+<h1>Role-playing and role dimensions</h1>
+<p>A single dimension can be referenced multiple times in a fact table,
+with each reference linked to a different conceptual role. These
+separate dimension views are called <em>role dimensions</em> and the
+common dimension is called a <em>role-playing dimension</em>.</p>
+<p>Depending on the OLAP (<em>On-Line Analytical Processing</em>) query
+system that we use, we may be interested in having a single physical
+table and defining views on it (one view for each role) or a different
+physical table for each role. The <code>rolap</code> package tries to
+facilitate the operations to achieve the alternative that we decide to
+implement.</p>
+<p>This document shows by means of an example the possibilities offered
+by the package in this context. First, through a star database, then by
+implementing a constellation.</p>
 </div>
-<div id="dimensional-modelling-and-star-databases" class="section level1">
-<h1>Dimensional modelling and star databases</h1>
-<p>The content of this section is a summary based mainly on <span class="citation">Adamson (2010)</span> and <span class="citation">Kimball and Ross (2013)</span>. It is intended to
-present the fundamental concepts of the area that are relevant to
-understand the functionality, naming and use of the <code>rolap</code>
-package.</p>
-<div id="dimensional-modelling" class="section level2">
-<h2>Dimensional modelling</h2>
-<p>Dimensional modelling aims to obtain simple data models. Simplicity
-is sought for two reasons: so that decision-makers can easily understand
-the data, and also so that they can be easily queried.</p>
-<p>In dimensional modelling, the analysis of a business process is
-performed <em>modelling how it is measured</em>. The measures are called
-<em>facts</em>, and the descriptors of the context of the facts are
-<em>dimensions</em>. Facts are numerical data, contain
-<em>measures</em>, and decision makers want to see them at various
-levels of detail, defined by dimensions.</p>
-<p>Not all numerical data is a measure in facts (some tools consider it
-that way). In dimensional modelling the designer has to differentiate
-between facts and dimensions. Some criteria are considered to
-distinguish between them, for example:</p>
-<ul>
-<li>If it can be defined at different levels of detail then it is a
-fact.</li>
-<li>If it is quantitative and takes continuous values, then it is a
-fact.</li>
-<li>If it provides context then it is a dimension.</li>
-</ul>
-<p>Sometimes there are no measures associated with the business process,
-it is simply recorded that the combination of dimensions has occurred.
-This situation is often called <em>factless facts</em>, <span class="citation">Jensen, Pedersen, and Thomsen (2010)</span> prefer to
-call it <em>measureless facts</em>. In any case, including when no other
-measures are available, a measure can be considered that represents the
-number of times the combination of dimension values occurs.</p>
-<div id="dimensions-and-dimension-attributes" class="section level3">
-<h3>Dimensions and dimension attributes</h3>
-<p>Attributes considered by the designer as dimensions can be grouped
-taking into account the natural affinities between them. In particular,
-they can be grouped as they describe the “who, what, where, when, how
-and why” associated with the modelled business process. Two attributes
-share a natural affinity when they are only related in one context. When
-their relationships are determined by transactions or activities, they
-can occur in multiple contexts, if this occurs, they must be located in
-different dimensions.</p>
-<p>In this way, a <em>dimension</em> is made up of a set of naturally
-related <em>dimension attributes</em> that describe the context of
-facts. Dimensions are used for two purposes: fact <em>selection</em> and
-fact <em>grouping</em> with the desired level of detail.</p>
-<p>Additionally, in the dimensions <em>hierarchies</em> with
-<em>levels</em> and <em>descriptors</em> can be defined. More details
-can be found at <span class="citation">Jensen, Pedersen, and Thomsen
-(2010)</span>. These concepts are not used in the current version of the
-package.</p>
-</div>
-<div id="facts-and-measures" class="section level3">
-<h3>Facts and measures</h3>
-<p>Facts have a <em>granularity</em>, which is determined by the
-attributes of the dimensions that are considered at each moment. Thus, a
-measure in a fact has two components, the <em>numerical property</em>
-and an <em>formula</em>, frequently the <em>SUM</em> aggregation
-function, that allows combining several values of this measure to obtain
-a new value of the same measure with a coarser granularity <span class="citation">(Jensen, Pedersen, and Thomsen 2010)</span>.</p>
-<p>According to their behaviour to obtain a coarser granularity, three
-types of measures are distinguished: <em>additive</em>,
-<em>semi-additive</em> and <em>non-additive</em>. For <em>additive
-measures</em>, SUM is always a valid formula that maintains the meaning
-of the measure when the granularity changes. For <em>semi-additive
-measures</em>, there is no point in using SUM when changing the level of
-detail in any of the dimensions because the meaning of the measure
-changes, this frequently occurs in dimensions that represents time and
-measures representing inventory level. For <em>non-additive
-measures</em>, values cannot be combined across any dimension using SUM
-because the result obtained has a different meaning from the original
-measure (generally occurs with ratios, percentages or unit amounts such
-as unit cost or unit price).</p>
-<p>The most useful measures are additive. If we have non-additive
-measures, they can generally be redefined from other additive
-measures.</p>
-</div>
-</div>
-<div id="star-databases" class="section level2">
-<h2>Star databases</h2>
-<p>Dimensional models implemented in RDBMS (<em>Relational Database
-Management Systems</em>) are known as ROLAP (<em>Relational On-Line
-Analytical Processing</em>), if they use a table for each dimension are
-called <em>ROLAP star databases</em> because of their resemblance to a
-star-like structure: A <em>fact table</em> in the centre and
-<em>dimension tables</em> around it. Thus, dimension attributes are
-columns of the respective dimension tables, and measures are columns of
-the fact table.</p>
-<p>Other possible implementations on RDBMS normalize dimensions and are
-known as <em>ROLAP snowflake databases</em>. More details can be found
-at <span class="citation">Jensen, Pedersen, and Thomsen (2010)</span>.
-This is not considered in this package.</p>
-<div id="dimension-tables" class="section level3">
-<h3>Dimension tables</h3>
-<p>Dimension tables contain the context associated with business process
-measures. Although they can contain any type of data, numerical data is
-generally not used for dimension attributes because some end user query
-tools consider any numeric data as a measure.</p>
-<p>Dimension attributes with NULL value are a source of problems when
-querying since DBMS and query tools sometimes handle them
-inconsistently, the result depends on the product. It is recommended to
-avoid the use of NULL and replace them with a descriptive text. In the
-case of dates, it is recommended to replace the NULL values with an
-arbitrary date in the very far future.</p>
-<div id="surrogate-keys" class="section level4">
-<h4>Surrogate keys</h4>
-<p>A dimension table contains dimension attributes and also a
-<em>surrogate key</em> column. This column is a unique identifier that
-has no intrinsic meaning: It is generally an integer and is the primary
-key for the dimension table. In <span class="citation">Adamson
-(2010)</span> surrogate keys are easily identifiable by the suffix
-“_key” in the column name (and this criterion has also been applied in
-<code>rolap</code> package).</p>
-<p>Dimension tables also contain <em>natural key</em> columns that
-uniquely identify associated entities in an operational system. The
-separation of surrogate keys and natural keys allows the star schema to
-store changes in dimensions. Therefore, the use of surrogate keys in
-dimensions is a solution to the SCD (<em>Slowly Changing
-Dimensions</em>) problem.</p>
-</div>
-<div id="special-dimensions" class="section level4">
-<h4>Special dimensions</h4>
-<p>In some cases, for the sake of simplicity, it is helpful to create a
-table that contains dimension attributes that have no natural affinities
-to each other, generally these are low-cardinality flags and indicators.
-The result is what is known as a <em>junk dimension</em>. They do not
-require any special support, only the designer’s will to define
-them.</p>
-<p>Sometimes some dimension attributes are left in the fact table,
-usually transaction identifiers. It is considered as the primary key of
-a dimension that does not have an associated table, for this reason it
-is known as a <em>degenerate dimension</em>. In this package, each
-dimension is represented by a table, for a degenerate dimension this
-table will have a single attribute (for example, the transaction
-identifier). If the dimension table is subsequently deleted, we will
-have a degenerate dimension.</p>
-<p>Associated with multiple star databases we have the <em>conformed
-dimensions</em> that are presented in section <a href="#conformed-dimensions">Conformed dimensions</a>.</p>
-</div>
-</div>
-<div id="fact-table" class="section level3">
-<h3>Fact table</h3>
-<p>At the centre of a star database is the fact table. In addition to
-containing measures, the fact table includes <em>foreign keys</em> that
-refer to each of the surrogate keys in the dimension tables.</p>
-<div id="primary-key" class="section level4">
-<h4>Primary key</h4>
-<p>A subset of foreign keys (along with possibly keys of degenerate
-dimensions) is considered to form the <em>primary key</em> of the fact
-table.</p>
-</div>
-<div id="grain" class="section level4">
-<h4>Grain</h4>
-<p>The subset of dimensions that forms the primary key defines the level
-of detail stored in the fact table, which is known as the fact table’s
-<em>grain</em>. In the design process, it is very important for the
-designer to clearly define the grain of the fact table (it is usually
-defined by listing the dimensions whose surrogate keys form its primary
-key): It is a way to ensure that all the facts are stored at the same
-level of detail.</p>
-<p>At the finest grain, a row in the fact table corresponds to the
-measures of an event and vice versa, it is not influenced by the
-possible reports that may be obtained. When two facts have different
-grains, they should be set on different fact tables.</p>
-</div>
-</div>
-<div id="constellation" class="section level3">
-<h3>Constellation</h3>
-<p>It is frequent the need to have several fact tables for various
-reasons:</p>
-<ul>
-<li><p>We find measures with different grain.</p></li>
-<li><p>There are measures that do not occur simultaneously, for example,
-when one occurs, we have no value for others and vice versa.</p></li>
-</ul>
-<p>In reality it is about different business processes, each one has to
-have its own fact table but they have dimensions in common. This is
-known as a <a href="https://www.geeksforgeeks.org/fact-constellation-in-data-warehouse-modelling/"><em>constellation</em></a>
-which corresponds to the Kimball <em>enterprise data warehouse bus
-architecture</em>.</p>
-</div>
-<div id="conformed-dimensions" class="section level3">
-<h3>Conformed dimensions</h3>
-<p>When star databases share a set of common dimensions in a
-constellation, these dimensions are called <em>conformed
-dimensions</em>.</p>
-<p>There are several possibilities to have conformed dimensions, the
-most obvious form is that the dimension tables share <em>structure</em>
-and <em>content</em>, that is, they are identical dimensions. This is
-the one considered in this version of the <code>rolap</code>
-package.</p>
-</div>
-</div>
-</div>
-<div id="an-illustrative-example" class="section level1">
-<h1>An illustrative example</h1>
-<p>In this section an illustrative example is developed to show how the
-package works.</p>
-<div id="data-sets" class="section level2">
-<h2>Data sets</h2>
-<p>To illustrate how the package works we will use a small part of the
-<a href="https://catalog.data.gov/dataset/deaths-in-122-u-s-cities-1962-2016-122-cities-mortality-reporting-system">Deaths
+<div id="a-star-database" class="section level1">
+<h1>A star database</h1>
+<p>First of all, we are going to present the starting data, then we will
+define the star schema to obtain the star database. Next, we will see
+the different possibilities with the role-playing dimension and the
+roles.</p>
+<div id="flat-table-with-the-initial-data" class="section level2">
+<h2>Flat table with the initial data</h2>
+<p>We use a dataset based on the <a href="https://catalog.data.gov/dataset/deaths-in-122-u-s-cities-1962-2016-122-cities-mortality-reporting-system">Deaths
 in 122 U.S. cities - 1962-2016. 122 Cities Mortality Reporting
-System</a> dataset.</p>
-<table>
+System</a> dataset. Two additional dates have been generated, which were
+not present in the original dataset.</p>
+<table style="width:100%;">
 <colgroup>
+<col width="6%" />
+<col width="6%" />
+<col width="6%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
 <col width="2%" />
 <col width="2%" />
 <col width="7%" />
@@ -1825,14 +1599,16 @@ System</a> dataset.</p>
 <col width="5%" />
 <col width="13%" />
 <col width="5%" />
-<col width="11%" />
-<col width="12%" />
 <col width="5%" />
-<col width="13%" />
-<col width="13%" />
 </colgroup>
 <thead>
 <tr class="header">
+<th align="center">Reception Year</th>
+<th align="center">Reception Week</th>
+<th align="center">Reception Date</th>
+<th align="center">Data Availability Year</th>
+<th align="center">Data Availability Week</th>
+<th align="center">Data Availability Date</th>
 <th align="center">Year</th>
 <th align="center">WEEK</th>
 <th align="center">Week Ending Date</th>
@@ -1841,649 +1617,249 @@ System</a> dataset.</p>
 <th align="center">City</th>
 <th align="center">Pneumonia and Influenza Deaths</th>
 <th align="center">All Deaths</th>
-<th align="center">&lt;1 year (all cause deaths)</th>
-<th align="center">1-24 years (all cause deaths)</th>
-<th align="center">25-44 years</th>
-<th align="center">45-64 years (all cause deaths)</th>
-<th align="center">65+ years (all cause deaths)</th>
+<th align="center">Other Deaths</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="center">1962</td>
 <td align="center">2</td>
-<td align="center">01/13/1962</td>
+<td align="center">1962-01-11</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+<td align="center">1962</td>
+<td align="center">1</td>
+<td align="center">1962-01-06</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Bridgeport</td>
+<td align="center">3</td>
+<td align="center">46</td>
+<td align="center">43</td>
+</tr>
+<tr class="even">
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-16</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-18</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
 <td align="center">1</td>
 <td align="center">MA</td>
 <td align="center">Boston</td>
 <td align="center">11</td>
 <td align="center">270</td>
-<td align="center">14</td>
-<td align="center">8</td>
-<td align="center">11</td>
-<td align="center">70</td>
-<td align="center">167</td>
+<td align="center">259</td>
+</tr>
+<tr class="odd">
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Hartford</td>
+<td align="center">2</td>
+<td align="center">54</td>
+<td align="center">52</td>
 </tr>
 <tr class="even">
 <td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-17</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Bridgeport</td>
+<td align="center">2</td>
+<td align="center">43</td>
+<td align="center">41</td>
+</tr>
+<tr class="odd">
+<td align="center">1962</td>
 <td align="center">4</td>
-<td align="center">01/27/1962</td>
+<td align="center">1962-01-27</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
 <td align="center">1</td>
 <td align="center">MA</td>
 <td align="center">Boston</td>
 <td align="center">12</td>
 <td align="center">285</td>
-<td align="center">22</td>
-<td align="center">7</td>
-<td align="center">8</td>
-<td align="center">73</td>
-<td align="center">175</td>
-</tr>
-<tr class="odd">
-<td align="center">1963</td>
-<td align="center">4</td>
-<td align="center">01/26/1963</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Boston</td>
-<td align="center">10</td>
-<td align="center">276</td>
-<td align="center">11</td>
-<td align="center">14</td>
-<td align="center">17</td>
-<td align="center">67</td>
-<td align="center">167</td>
-</tr>
-<tr class="even">
-<td align="center">1964</td>
-<td align="center">3</td>
-<td align="center">01/18/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Boston</td>
-<td align="center">13</td>
-<td align="center">325</td>
-<td align="center">17</td>
-<td align="center">7</td>
-<td align="center">24</td>
-<td align="center">90</td>
-<td align="center">187</td>
-</tr>
-<tr class="odd">
-<td align="center">1964</td>
-<td align="center">6</td>
-<td align="center">02/08/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Boston</td>
-<td align="center">9</td>
-<td align="center">244</td>
-<td align="center">13</td>
-<td align="center">9</td>
-<td align="center">14</td>
-<td align="center">61</td>
-<td align="center">147</td>
+<td align="center">273</td>
 </tr>
 <tr class="even">
 <td align="center">1962</td>
-<td align="center">3</td>
-<td align="center">01/20/1962</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
 <td align="center">2</td>
-<td align="center">40</td>
-<td align="center">5</td>
-<td align="center">1</td>
-<td align="center">3</td>
-<td align="center">10</td>
-<td align="center">21</td>
-</tr>
-<tr class="odd">
+<td align="center">1962-01-13</td>
 <td align="center">1962</td>
-<td align="center">5</td>
-<td align="center">02/03/1962</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
-<td align="center">5</td>
-<td align="center">46</td>
-<td align="center">6</td>
-<td align="center">0</td>
 <td align="center">3</td>
-<td align="center">15</td>
-<td align="center">22</td>
-</tr>
-<tr class="even">
+<td align="center">1962-01-18</td>
 <td align="center">1962</td>
-<td align="center">8</td>
-<td align="center">02/24/1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
 <td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
+<td align="center">MA</td>
+<td align="center">Cambridge</td>
 <td align="center">2</td>
-<td align="center">45</td>
-<td align="center">2</td>
-<td align="center">0</td>
-<td align="center">2</td>
-<td align="center">16</td>
+<td align="center">27</td>
 <td align="center">25</td>
 </tr>
 <tr class="odd">
-<td align="center">1963</td>
-<td align="center">4</td>
-<td align="center">01/26/1963</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
-<td align="center">2</td>
-<td align="center">46</td>
-<td align="center">4</td>
-<td align="center">0</td>
-<td align="center">3</td>
-<td align="center">10</td>
-<td align="center">29</td>
-</tr>
-<tr class="even">
-<td align="center">1964</td>
-<td align="center">5</td>
-<td align="center">02/01/1964</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
-<td align="center">8</td>
-<td align="center">45</td>
-<td align="center">3</td>
-<td align="center">1</td>
-<td align="center">2</td>
+<td align="center">1962</td>
 <td align="center">11</td>
-<td align="center">28</td>
-</tr>
-<tr class="odd">
+<td align="center">1962-03-14</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
 <td align="center">1962</td>
 <td align="center">9</td>
-<td align="center">03/03/1962</td>
+<td align="center">1962-03-03</td>
 <td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Cambridge</td>
-<td align="center">4</td>
-<td align="center">39</td>
-<td align="center">1</td>
-<td align="center">0</td>
-<td align="center">2</td>
-<td align="center">7</td>
-<td align="center">29</td>
+<td align="center">CT</td>
+<td align="center">Hartford</td>
+<td align="center">3</td>
+<td align="center">63</td>
+<td align="center">60</td>
 </tr>
 <tr class="even">
-<td align="center">1964</td>
-<td align="center">2</td>
-<td align="center">01/11/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Cambridge</td>
-<td align="center">7</td>
-<td align="center">31</td>
-<td align="center">1</td>
-<td align="center">0</td>
-<td align="center">2</td>
-<td align="center">9</td>
-<td align="center">19</td>
-</tr>
-<tr class="odd">
-<td align="center">1964</td>
+<td align="center">1962</td>
 <td align="center">5</td>
-<td align="center">02/01/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Cambridge</td>
-<td align="center">6</td>
-<td align="center">27</td>
-<td align="center">2</td>
-<td align="center">0</td>
-<td align="center">0</td>
-<td align="center">8</td>
-<td align="center">17</td>
-</tr>
-<tr class="even">
-<td align="center">1964</td>
-<td align="center">9</td>
-<td align="center">02/29/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Cambridge</td>
-<td align="center">0</td>
-<td align="center">26</td>
-<td align="center">0</td>
-<td align="center">0</td>
-<td align="center">2</td>
-<td align="center">8</td>
-<td align="center">16</td>
-</tr>
-<tr class="odd">
+<td align="center">1962-01-29</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
 <td align="center">1962</td>
 <td align="center">4</td>
-<td align="center">01/27/1962</td>
+<td align="center">1962-01-27</td>
 <td align="center">1</td>
 <td align="center">CT</td>
 <td align="center">Hartford</td>
 <td align="center">1</td>
 <td align="center">47</td>
-<td align="center">7</td>
+<td align="center">46</td>
+</tr>
+<tr class="odd">
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
 <td align="center">1</td>
-<td align="center">0</td>
-<td align="center">14</td>
-<td align="center">25</td>
+<td align="center">CT</td>
+<td align="center">Bridgeport</td>
+<td align="center">4</td>
+<td align="center">46</td>
+<td align="center">42</td>
 </tr>
 <tr class="even">
 <td align="center">1962</td>
-<td align="center">7</td>
-<td align="center">02/17/1962</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Hartford</td>
 <td align="center">4</td>
-<td align="center">57</td>
-<td align="center">3</td>
-<td align="center">1</td>
-<td align="center">3</td>
-<td align="center">21</td>
-<td align="center">29</td>
-</tr>
-<tr class="odd">
-<td align="center">1963</td>
-<td align="center">3</td>
-<td align="center">01/19/1963</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Hartford</td>
-<td align="center">2</td>
-<td align="center">66</td>
-<td align="center">7</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">18</td>
-<td align="center">36</td>
-</tr>
-<tr class="even">
-<td align="center">1963</td>
-<td align="center">7</td>
-<td align="center">02/16/1963</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Hartford</td>
+<td align="center">1962-01-27</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+<td align="center">1962</td>
 <td align="center">4</td>
-<td align="center">77</td>
-<td align="center">6</td>
+<td align="center">1962-01-27</td>
 <td align="center">1</td>
-<td align="center">7</td>
-<td align="center">19</td>
-<td align="center">44</td>
-</tr>
-<tr class="odd">
-<td align="center">1963</td>
-<td align="center">8</td>
-<td align="center">02/23/1963</td>
+<td align="center">MA</td>
+<td align="center">Cambridge</td>
 <td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Hartford</td>
-<td align="center">6</td>
-<td align="center">49</td>
-<td align="center">3</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">14</td>
-<td align="center">27</td>
-</tr>
-<tr class="even">
-<td align="center">1964</td>
-<td align="center">2</td>
-<td align="center">01/11/1964</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Hartford</td>
-<td align="center">3</td>
-<td align="center">53</td>
-<td align="center">7</td>
-<td align="center">0</td>
-<td align="center">2</td>
-<td align="center">16</td>
-<td align="center">28</td>
+<td align="center">40</td>
+<td align="center">39</td>
 </tr>
 </tbody>
 </table>
-<p>In the table above, all the rows of the <code>ft</code> dataset are
-shown. For each week and city, mortality figures by <strong>age</strong>
-group and <strong>cause</strong>, considered separately, are included
-(i.e., the combination of age group and cause is not included). In the
-cause, only a distinction is made between pneumonia or influenza and
-others. Regarding the data types, all the columns are of type character,
-they have been imported directly as a <code>tibble</code>, without
-indicating a specific type.</p>
-<p>From this initial dataset, two additional datasets,
-<code>ft_num</code> and <code>ft_age</code>, have been defined with the
-transformations shown below.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(rolap)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>ft_num <span class="ot">&lt;-</span> ft <span class="sc">|&gt;</span></span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="st">`</span><span class="at">Pneumonia and Influenza Deaths</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.integer</span>(<span class="st">`</span><span class="at">Pneumonia and Influenza Deaths</span><span class="st">`</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="st">`</span><span class="at">All Deaths</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.integer</span>(<span class="st">`</span><span class="at">All Deaths</span><span class="st">`</span>))</span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>ft_age <span class="ot">&lt;-</span> ft <span class="sc">|&gt;</span></span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span><span class="st">`</span><span class="at">Pneumonia and Influenza Deaths</span><span class="st">`</span>,<span class="sc">-</span><span class="st">`</span><span class="at">All Deaths</span><span class="st">`</span>) <span class="sc">|&gt;</span></span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">gather</span>(<span class="st">&quot;Age&quot;</span>, <span class="st">&quot;All Deaths&quot;</span>, <span class="dv">7</span><span class="sc">:</span><span class="dv">11</span>) <span class="sc">|&gt;</span></span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="st">`</span><span class="at">All Deaths</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.integer</span>(<span class="st">`</span><span class="at">All Deaths</span><span class="st">`</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">Age =</span> stringr<span class="sc">::</span><span class="fu">str_replace</span>(Age, <span class="st">&quot; </span><span class="sc">\\</span><span class="st">(all cause deaths</span><span class="sc">\\</span><span class="st">)&quot;</span>, <span class="st">&quot;&quot;</span>))</span></code></pre></div>
-<p><code>ft_num</code> has the same structure and data as
-<code>ft</code>, only the data types of the two cause measures change.
-For <code>ft_age</code>, the columns with cause measures are removed and
-it is transformed into a tidy table (through
-<code>tidyr::gather</code>), with the only measure of numeric type and
-removing redundant descriptions. Below are the first 15 rows of
-<code>ft_age</code>.</p>
-<table>
-<colgroup>
-<col width="8%" />
-<col width="8%" />
-<col width="22%" />
-<col width="10%" />
-<col width="9%" />
-<col width="15%" />
-<col width="11%" />
-<col width="15%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">Year</th>
-<th align="center">WEEK</th>
-<th align="center">Week Ending Date</th>
-<th align="center">REGION</th>
-<th align="center">State</th>
-<th align="center">City</th>
-<th align="center">Age</th>
-<th align="center">All Deaths</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">1962</td>
-<td align="center">2</td>
-<td align="center">01/13/1962</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Boston</td>
-<td align="center">&lt;1 year</td>
-<td align="center">14</td>
-</tr>
-<tr class="even">
-<td align="center">1962</td>
-<td align="center">4</td>
-<td align="center">01/27/1962</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Boston</td>
-<td align="center">&lt;1 year</td>
-<td align="center">22</td>
-</tr>
-<tr class="odd">
-<td align="center">1963</td>
-<td align="center">4</td>
-<td align="center">01/26/1963</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Boston</td>
-<td align="center">&lt;1 year</td>
-<td align="center">11</td>
-</tr>
-<tr class="even">
-<td align="center">1964</td>
-<td align="center">3</td>
-<td align="center">01/18/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Boston</td>
-<td align="center">&lt;1 year</td>
-<td align="center">17</td>
-</tr>
-<tr class="odd">
-<td align="center">1964</td>
-<td align="center">6</td>
-<td align="center">02/08/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Boston</td>
-<td align="center">&lt;1 year</td>
-<td align="center">13</td>
-</tr>
-<tr class="even">
-<td align="center">1962</td>
-<td align="center">3</td>
-<td align="center">01/20/1962</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
-<td align="center">&lt;1 year</td>
-<td align="center">5</td>
-</tr>
-<tr class="odd">
-<td align="center">1962</td>
-<td align="center">5</td>
-<td align="center">02/03/1962</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
-<td align="center">&lt;1 year</td>
-<td align="center">6</td>
-</tr>
-<tr class="even">
-<td align="center">1962</td>
-<td align="center">8</td>
-<td align="center">02/24/1962</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
-<td align="center">&lt;1 year</td>
-<td align="center">2</td>
-</tr>
-<tr class="odd">
-<td align="center">1963</td>
-<td align="center">4</td>
-<td align="center">01/26/1963</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
-<td align="center">&lt;1 year</td>
-<td align="center">4</td>
-</tr>
-<tr class="even">
-<td align="center">1964</td>
-<td align="center">5</td>
-<td align="center">02/01/1964</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Bridgeport</td>
-<td align="center">&lt;1 year</td>
-<td align="center">3</td>
-</tr>
-<tr class="odd">
-<td align="center">1962</td>
-<td align="center">9</td>
-<td align="center">03/03/1962</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Cambridge</td>
-<td align="center">&lt;1 year</td>
-<td align="center">1</td>
-</tr>
-<tr class="even">
-<td align="center">1964</td>
-<td align="center">2</td>
-<td align="center">01/11/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Cambridge</td>
-<td align="center">&lt;1 year</td>
-<td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">1964</td>
-<td align="center">5</td>
-<td align="center">02/01/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Cambridge</td>
-<td align="center">&lt;1 year</td>
-<td align="center">2</td>
-</tr>
-<tr class="even">
-<td align="center">1964</td>
-<td align="center">9</td>
-<td align="center">02/29/1964</td>
-<td align="center">1</td>
-<td align="center">MA</td>
-<td align="center">Cambridge</td>
-<td align="center">&lt;1 year</td>
-<td align="center">0</td>
-</tr>
-<tr class="odd">
-<td align="center">1962</td>
-<td align="center">4</td>
-<td align="center">01/27/1962</td>
-<td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Hartford</td>
-<td align="center">&lt;1 year</td>
-<td align="center">7</td>
-</tr>
-</tbody>
-</table>
-<p><code>ft_num</code> and <code>ft_age</code> are the flat tables that
-will be considered as a starting point to obtain star databases from
-them in this example.</p>
+<p>We have selected a small dataset so that the result can be more
+easily appreciated. Several columns with time information have been
+added so that it is justified to define a time dimension that can play
+several roles.</p>
 </div>
-<div id="dimensional-modelling-1" class="section level2">
-<h2>Dimensional modelling</h2>
-<p>For each flat table, the goal is to define the attributes that
-correspond to measures in facts and those that are in dimensions. For
-facts, measures and their aggregation functions have to be defined. For
-dimensions, attributes with natural affinity must be grouped. Each
-attribute should only appear once in the definition.</p>
-<p>To avoid having to write the name of the attributes of the table,
-with the following function we can have them in the form of a string.
-Thus, we can copy and paste each name as needed.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">dput</span>(<span class="fu">colnames</span>(ft_num))</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt; c(&quot;Year&quot;, &quot;WEEK&quot;, &quot;Week Ending Date&quot;, &quot;REGION&quot;, &quot;State&quot;, &quot;City&quot;, </span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt; &quot;Pneumonia and Influenza Deaths&quot;, &quot;All Deaths&quot;, &quot;&lt;1 year (all cause deaths)&quot;, </span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; &quot;1-24 years (all cause deaths)&quot;, &quot;25-44 years&quot;, &quot;45-64 years (all cause deaths)&quot;, </span></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; &quot;65+ years (all cause deaths)&quot;)</span></span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">dput</span>(<span class="fu">colnames</span>(ft_age))</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; c(&quot;Year&quot;, &quot;WEEK&quot;, &quot;Week Ending Date&quot;, &quot;REGION&quot;, &quot;State&quot;, &quot;City&quot;, </span></span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; &quot;Age&quot;, &quot;All Deaths&quot;)</span></span></code></pre></div>
-<div id="star-schema" class="section level3">
-<h3>Star Schema</h3>
-<p>We create an <code>star_schema</code> object using the
-<code>star_schema()</code> function, as shown below.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">star_schema</span>()</span></code></pre></div>
-<p>We already have an empty schema, we can add facts and dimensions to
-it, as shown in the sections that follow.</p>
+<div id="star-schema" class="section level2">
+<h2>Star schema</h2>
+<p>To define the schema, we get the table columns as shown below.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">dput</span>(<span class="fu">colnames</span>(ft_cause_rpd))</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt; c(&quot;Reception Year&quot;, &quot;Reception Week&quot;, &quot;Reception Date&quot;, &quot;Data Availability Year&quot;, </span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; &quot;Data Availability Week&quot;, &quot;Data Availability Date&quot;, &quot;Year&quot;, &quot;WEEK&quot;, </span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; &quot;Week Ending Date&quot;, &quot;REGION&quot;, &quot;State&quot;, &quot;City&quot;, &quot;Pneumonia and Influenza Deaths&quot;, </span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; &quot;All Deaths&quot;, &quot;Other Deaths&quot;)</span></span></code></pre></div>
+<p>The definition of the star schema is shown below.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>when <span class="ot">&lt;-</span> <span class="fu">dimension_schema</span>(<span class="at">name =</span> <span class="st">&quot;When&quot;</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>                         <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>                                        <span class="st">&quot;WEEK&quot;</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>                                        <span class="st">&quot;Week Ending Date&quot;</span>))</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>when_available <span class="ot">&lt;-</span> <span class="fu">dimension_schema</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">&quot;When Available&quot;</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="at">attributes =</span> <span class="fu">c</span>(</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>    <span class="st">&quot;Data Availability Year&quot;</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>    <span class="st">&quot;Data Availability Week&quot;</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>    <span class="st">&quot;Data Availability Date&quot;</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  )</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>)</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>where <span class="ot">&lt;-</span> <span class="fu">dimension_schema</span>(<span class="at">name =</span> <span class="st">&quot;where&quot;</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>                          <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;REGION&quot;</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>                                         <span class="st">&quot;State&quot;</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>                                         <span class="st">&quot;City&quot;</span>))</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  <span class="fu">define_facts</span>(<span class="fu">fact_schema</span>(</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;MRS Cause&quot;</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>    <span class="at">measures =</span> <span class="fu">c</span>(<span class="st">&quot;Pneumonia and Influenza Deaths&quot;</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>                 <span class="st">&quot;All Deaths&quot;</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>  <span class="fu">define_dimension</span>(when) <span class="sc">|&gt;</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>  <span class="fu">define_dimension</span>(when_available) <span class="sc">|&gt;</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>  <span class="fu">define_dimension</span>(<span class="fu">dimension_schema</span>(</span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;When Received&quot;</span>,</span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>    <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;Reception Year&quot;</span>,</span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a>                   <span class="st">&quot;Reception Week&quot;</span>,</span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>                   <span class="st">&quot;Reception Date&quot;</span>)</span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>  <span class="fu">define_dimension</span>(where)</span></code></pre></div>
+<p>As we will define more star schemas with dimensions in common, some
+of the dimensions have been defined as variables, to avoid repeating
+their definition later.</p>
 </div>
-<div id="dimensions" class="section level3">
-<h3>Dimensions</h3>
-<p>We can define the dimensions through variables, using the
-<code>dimension_schema()</code> function and then the
-<code>define_dimension()</code> function in a <code>star_schema</code>
-object, or directly in a <code>star_schema</code> object , using the
-<code>define_dimension()</code> function. In the example below, the
-result in both cases is the same. The advantage is that by using
-variables we save defining them several times if the same dimension
-appears in several star schemes.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># definition 1</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>when <span class="ot">&lt;-</span> <span class="fu">dimension_schema</span>(<span class="at">name =</span> <span class="st">&quot;When&quot;</span>,</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>                         <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>                                        <span class="st">&quot;WEEK&quot;</span>))</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>s_age <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="fu">define_dimension</span>(when)</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co"># definition 2</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>s_age <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="fu">define_dimension</span>(<span class="at">name =</span> <span class="st">&quot;When&quot;</span>,</span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>                         <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>                                        <span class="st">&quot;WEEK&quot;</span>))</span></code></pre></div>
-</div>
-<div id="facts" class="section level3">
-<h3>Facts</h3>
-<p>For completeness, facts can also be defined as variables or directly
-associated with the star_schema object. As for the dimensions, in the
-example below, the result in both cases is the same.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># definition 1</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>mrs_cause <span class="ot">&lt;-</span> <span class="fu">fact_schema</span>(<span class="at">name =</span> <span class="st">&quot;MRS Cause&quot;</span>,</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>               <span class="at">measures =</span> <span class="fu">c</span>(<span class="st">&quot;Pneumonia and Influenza Deaths&quot;</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>                            <span class="st">&quot;All Deaths&quot;</span>))</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>s_cause <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="fu">define_facts</span>(mrs_cause)</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co"># definition 2</span></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>s_cause <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>  <span class="fu">define_facts</span>(<span class="at">name =</span> <span class="st">&quot;MRS Cause&quot;</span>,</span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>               <span class="at">measures =</span> <span class="fu">c</span>(<span class="st">&quot;Pneumonia and Influenza Deaths&quot;</span>,</span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>                            <span class="st">&quot;All Deaths&quot;</span>))</span></code></pre></div>
-<p>Each measure has an aggregation function associated with it, by
-default it is <em>SUM</em>. Alternatively, the <em>MAX</em> or
-<em>MIN</em> functions can be used. <em>AVG</em> cannot be used because
-the average of averages is not the total average. Instead, a field
-called <code>nrow_agg</code> (an alternative name can be specified) is
-always added where the number of records added in the result row is
-stored. With that value and the result of <em>SUM</em>, the value of the
-<em>AVG</em> function can be obtained.</p>
-<p>The aggregation functions are needed to get the data at the
-granularity defined in the star schema, which can be equal to or coarser
-than the granularity defined in the flat table.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>s_cause <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="fu">define_facts</span>(<span class="at">name =</span> <span class="st">&quot;MRS Cause&quot;</span>,</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>               <span class="at">measures =</span> <span class="fu">c</span>(<span class="st">&quot;Pneumonia and Influenza Deaths&quot;</span>,</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>                            <span class="st">&quot;All Deaths&quot;</span>),</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>               <span class="at">agg_functions =</span> <span class="fu">c</span>(<span class="st">&quot;MAX&quot;</span>, <span class="st">&quot;SUM&quot;</span>),</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>               <span class="at">nrow_agg =</span> <span class="st">&quot;Num&quot;</span> </span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>               )</span></code></pre></div>
-<p>In the above example, aggregation functions have been explicitly
-defined for the measures and the default name of the measure
-corresponding to the number of records added has been changed.</p>
-</div>
-<div id="star-databases-1" class="section level3">
-<h3>Star databases</h3>
-<p>From a <code>star_schema</code> object and a flat table
-(<code>tibble</code>) that contains all the fields that appear in it,
-using the <code>star_database()</code> function, we obtain a
-<code>star_database</code> object. As an example we will consider data
-on causes.</p>
-<p>The definition of the star schema for the data considered for the
-cause case is shown below.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>s_cause <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="fu">define_facts</span>(<span class="at">name =</span> <span class="st">&quot;MRS Cause&quot;</span>,</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>               <span class="at">measures =</span> <span class="fu">c</span>(<span class="st">&quot;Pneumonia and Influenza Deaths&quot;</span>,</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>                            <span class="st">&quot;All Deaths&quot;</span>),</span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>               <span class="at">nrow_agg =</span> <span class="st">&quot;Num&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="fu">define_dimension</span>(<span class="at">name =</span> <span class="st">&quot;When&quot;</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>                         <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>,</span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>                                        <span class="st">&quot;WEEK&quot;</span>,</span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>                                        <span class="st">&quot;Week Ending Date&quot;</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="fu">define_dimension</span>(<span class="at">name =</span> <span class="st">&quot;Where&quot;</span>,</span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>                          <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;REGION&quot;</span>,</span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>                                         <span class="st">&quot;State&quot;</span>,</span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>                                         <span class="st">&quot;City&quot;</span>))</span></code></pre></div>
-<p>Next we get the star database.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>db_cause <span class="ot">&lt;-</span> <span class="fu">star_database</span>(s_cause, ft_num)</span></code></pre></div>
-<p>For now the objective of this database is to export its tables to be
-used in OLAP query tools. Two functions are offered for this purpose,
-firstly <code>snake_case()</code> to transform the column names to snake
-case and secondly <code>as_tibble_list()</code> to generate a
-<code>tibble</code> list with the database tables, as shown in the
-following example.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>l_cause <span class="ot">&lt;-</span> db_cause <span class="sc">|&gt;</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="fu">snake_case</span>() <span class="sc">|&gt;</span></span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span></code></pre></div>
-<p>The tables of dimensions and facts of the obtained star database are
-shown below.</p>
+<div id="star-database" class="section level2">
+<h2>Star database</h2>
+<p>From the star schema and the flat table, we define the star database,
+as can be seen below.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>db <span class="ot">&lt;-</span> <span class="fu">star_database</span>(s, ft_cause_rpd) <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">snake_case</span>()</span></code></pre></div>
+<p>It has been transformed to snake case because it is usually more
+appropriate if we work in RDBMS (<em>Relational Database Management
+Systems</em>).</p>
+<div class="grViz html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1fcd4521e400ea75ba23" style="width:288px;height:288px;"></div>
+<script type="application/json" data-for="htmlwidget-1fcd4521e400ea75ba23">{"x":{"diagram":"#data_model\ndigraph {\ngraph [rankdir=LR tooltip=\"Data Model\" ]\n\nnode [margin=0 fontcolor = \"#444444\" ]\n\nedge [color = \"#555555\", arrowsize = 1, ]\n\npack=true\npackmode= \"node\"\n\n  \"mrs_cause\" [id = \"mrs_cause\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_cause<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_available_key\">when_available_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_received_key\">when_received_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">pneumonia_and_influenza_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">all_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when\" [id = \"when\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_key\"><U>when_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week_ending_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when_available\" [id = \"when_available\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when_available<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_available_key\"><U>when_available_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">data_availability_year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">data_availability_week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">data_availability_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when_received\" [id = \"when_received\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when_received<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_received_key\"><U>when_received_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">reception_year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">reception_week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">reception_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"where\" [id = \"where\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">where<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"where_key\"><U>where_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">region<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">state<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">city<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n\"mrs_cause\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_cause_1\"]\n\"mrs_cause\":\"when_available_key\"->\"when_available\":\"when_available_key\" [id=\"mrs_cause_2\"]\n\"mrs_cause\":\"when_received_key\"->\"when_received\":\"when_received_key\" [id=\"mrs_cause_3\"]\n\"mrs_cause\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_cause_4\"]\n}","config":{"engine":null,"options":null}},"evals":[],"jsHooks":[]}</script>
+<p>It can be seen that the tables associated with the dimension
+<em>when</em> (<em>when</em>, <em>when_available</em>,
+<em>when_received</em>) have the same structure, although the names of
+their attributes are different because they come from the same flat
+table and the field names cannot be repeated in the same table.</p>
+<p>The instances of the tables of dimensions and facts of the star
+database are shown below.</p>
 <table style="width:61%;">
 <colgroup>
 <col width="15%" />
@@ -2503,98 +1879,152 @@ shown below.</p>
 <tr class="odd">
 <td align="center">1</td>
 <td align="center">1962</td>
-<td align="center">2</td>
-<td align="center">01/13/1962</td>
+<td align="center">1</td>
+<td align="center">1962-01-06</td>
 </tr>
 <tr class="even">
 <td align="center">2</td>
 <td align="center">1962</td>
-<td align="center">3</td>
-<td align="center">01/20/1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
 </tr>
 <tr class="odd">
 <td align="center">3</td>
 <td align="center">1962</td>
 <td align="center">4</td>
-<td align="center">01/27/1962</td>
+<td align="center">1962-01-27</td>
 </tr>
 <tr class="even">
 <td align="center">4</td>
-<td align="center">1962</td>
-<td align="center">5</td>
-<td align="center">02/03/1962</td>
-</tr>
-<tr class="odd">
-<td align="center">5</td>
-<td align="center">1962</td>
-<td align="center">7</td>
-<td align="center">02/17/1962</td>
-</tr>
-<tr class="even">
-<td align="center">6</td>
-<td align="center">1962</td>
-<td align="center">8</td>
-<td align="center">02/24/1962</td>
-</tr>
-<tr class="odd">
-<td align="center">7</td>
 <td align="center">1962</td>
 <td align="center">9</td>
-<td align="center">03/03/1962</td>
+<td align="center">1962-03-03</td>
 </tr>
-<tr class="even">
-<td align="center">8</td>
-<td align="center">1963</td>
-<td align="center">3</td>
-<td align="center">01/19/1963</td>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="21%" />
+<col width="26%" />
+<col width="26%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_available_key</th>
+<th align="center">data_availability_year</th>
+<th align="center">data_availability_week</th>
+<th align="center">data_availability_date</th>
 </tr>
+</thead>
+<tbody>
 <tr class="odd">
-<td align="center">9</td>
-<td align="center">1963</td>
-<td align="center">4</td>
-<td align="center">01/26/1963</td>
-</tr>
-<tr class="even">
-<td align="center">10</td>
-<td align="center">1963</td>
-<td align="center">7</td>
-<td align="center">02/16/1963</td>
-</tr>
-<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
 <td align="center">11</td>
-<td align="center">1963</td>
-<td align="center">8</td>
-<td align="center">02/23/1963</td>
+<td align="center">1962-03-15</td>
 </tr>
 <tr class="even">
-<td align="center">12</td>
-<td align="center">1964</td>
 <td align="center">2</td>
-<td align="center">01/11/1964</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
 </tr>
 <tr class="odd">
-<td align="center">13</td>
-<td align="center">1964</td>
 <td align="center">3</td>
-<td align="center">01/18/1964</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
 </tr>
 <tr class="even">
-<td align="center">14</td>
-<td align="center">1964</td>
-<td align="center">5</td>
-<td align="center">02/01/1964</td>
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-17</td>
 </tr>
 <tr class="odd">
-<td align="center">15</td>
-<td align="center">1964</td>
-<td align="center">6</td>
-<td align="center">02/08/1964</td>
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-18</td>
 </tr>
 <tr class="even">
-<td align="center">16</td>
-<td align="center">1964</td>
-<td align="center">9</td>
-<td align="center">02/29/1964</td>
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+</tbody>
+</table>
+<table style="width:99%;">
+<colgroup>
+<col width="27%" />
+<col width="23%" />
+<col width="23%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_received_key</th>
+<th align="center">reception_year</th>
+<th align="center">reception_week</th>
+<th align="center">reception_date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-11</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-16</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
 </tr>
 </tbody>
 </table>
@@ -2640,384 +2070,1227 @@ shown below.</p>
 </tr>
 </tbody>
 </table>
-<table style="width:100%;">
+<table>
 <colgroup>
-<col width="14%" />
-<col width="16%" />
-<col width="44%" />
-<col width="17%" />
 <col width="8%" />
+<col width="17%" />
+<col width="16%" />
+<col width="9%" />
+<col width="26%" />
+<col width="10%" />
+<col width="10%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="center">when_key</th>
+<th align="center">when_available_key</th>
+<th align="center">when_received_key</th>
 <th align="center">where_key</th>
 <th align="center">pneumonia_and_influenza_deaths</th>
 <th align="center">all_deaths</th>
-<th align="center">num</th>
+<th align="center">nrow_agg</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="center">1</td>
+<td align="center">3</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">46</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">54</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">2</td>
+<td align="center">4</td>
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">43</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">5</td>
+<td align="center">3</td>
+<td align="center">4</td>
+<td align="center">2</td>
+<td align="center">27</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">2</td>
+<td align="center">5</td>
+<td align="center">5</td>
 <td align="center">3</td>
 <td align="center">11</td>
 <td align="center">270</td>
 <td align="center">1</td>
 </tr>
 <tr class="even">
-<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">6</td>
+<td align="center">6</td>
 <td align="center">1</td>
-<td align="center">2</td>
-<td align="center">40</td>
+<td align="center">4</td>
+<td align="center">46</td>
 <td align="center">1</td>
 </tr>
 <tr class="odd">
 <td align="center">3</td>
+<td align="center">7</td>
+<td align="center">6</td>
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">40</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">3</td>
+<td align="center">7</td>
+<td align="center">7</td>
 <td align="center">2</td>
 <td align="center">1</td>
 <td align="center">47</td>
 <td align="center">1</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="center">3</td>
+<td align="center">8</td>
+<td align="center">6</td>
 <td align="center">3</td>
 <td align="center">12</td>
 <td align="center">285</td>
 <td align="center">1</td>
 </tr>
-<tr class="odd">
-<td align="center">4</td>
-<td align="center">1</td>
-<td align="center">5</td>
-<td align="center">46</td>
-<td align="center">1</td>
-</tr>
 <tr class="even">
-<td align="center">5</td>
-<td align="center">2</td>
 <td align="center">4</td>
-<td align="center">57</td>
 <td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">6</td>
 <td align="center">1</td>
 <td align="center">2</td>
-<td align="center">45</td>
-<td align="center">1</td>
-</tr>
-<tr class="even">
-<td align="center">7</td>
-<td align="center">4</td>
-<td align="center">4</td>
-<td align="center">39</td>
-<td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">8</td>
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">66</td>
-<td align="center">1</td>
-</tr>
-<tr class="even">
-<td align="center">9</td>
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">46</td>
-<td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">9</td>
 <td align="center">3</td>
-<td align="center">10</td>
-<td align="center">276</td>
+<td align="center">63</td>
 <td align="center">1</td>
+</tr>
+</tbody>
+</table>
+<p>We observe that each of the <em>when</em> dimensions (<em>when</em>,
+<em>when_available</em>, <em>when_received</em>) has its own set of
+instances, exclusively those necessary for the concept they
+represent.</p>
+</div>
+<div id="star-database-with-a-role-playing-dimension-and-role-dimensions" class="section level2">
+<h2>Star database with a role-playing dimension and role dimensions</h2>
+<p>In the star database, we can define that any one of the dimensions is
+the role-playing dimension and the other dimensions are various roles of
+that dimension. The only requirement is that all dimensions must have
+the same number of attributes. This definition is shown below.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>db_1 <span class="ot">&lt;-</span> db <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="fu">role_playing_dimension</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    <span class="at">rpd =</span> <span class="st">&quot;when&quot;</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>    <span class="at">roles =</span> <span class="fu">c</span>(<span class="st">&quot;when_available&quot;</span>, <span class="st">&quot;when_received&quot;</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  )</span></code></pre></div>
+<p>The result can be seen in the instances of the star database tables,
+below.</p>
+<table style="width:61%;">
+<colgroup>
+<col width="15%" />
+<col width="9%" />
+<col width="9%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_key</th>
+<th align="center">year</th>
+<th align="center">week</th>
+<th align="center">week_ending_date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">1</td>
+<td align="center">1962-01-06</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-11</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-16</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-17</td>
+</tr>
+<tr class="odd">
+<td align="center">9</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-18</td>
 </tr>
 <tr class="even">
 <td align="center">10</td>
-<td align="center">2</td>
+<td align="center">1962</td>
 <td align="center">4</td>
-<td align="center">77</td>
-<td align="center">1</td>
+<td align="center">1962-01-27</td>
 </tr>
 <tr class="odd">
 <td align="center">11</td>
-<td align="center">2</td>
-<td align="center">6</td>
-<td align="center">49</td>
-<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
 </tr>
 <tr class="even">
 <td align="center">12</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">53</td>
-<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
 </tr>
 <tr class="odd">
-<td align="center">12</td>
+<td align="center">13</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">14</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+<tr class="odd">
+<td align="center">15</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-03</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="21%" />
+<col width="26%" />
+<col width="26%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_available_key</th>
+<th align="center">data_availability_year</th>
+<th align="center">data_availability_week</th>
+<th align="center">data_availability_date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">1</td>
+<td align="center">1962-01-06</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+</tr>
+<tr class="even">
 <td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-11</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+</tr>
+<tr class="odd">
 <td align="center">7</td>
-<td align="center">31</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-16</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-17</td>
+</tr>
+<tr class="odd">
+<td align="center">9</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-18</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">11</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+</tr>
+<tr class="even">
+<td align="center">12</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
+</tr>
+<tr class="odd">
+<td align="center">13</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">14</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+<tr class="odd">
+<td align="center">15</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-03</td>
+</tr>
+</tbody>
+</table>
+<table style="width:99%;">
+<colgroup>
+<col width="27%" />
+<col width="23%" />
+<col width="23%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_received_key</th>
+<th align="center">reception_year</th>
+<th align="center">reception_week</th>
+<th align="center">reception_date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">1</td>
+<td align="center">1962-01-06</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-11</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-16</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-17</td>
+</tr>
+<tr class="odd">
+<td align="center">9</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-18</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">11</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+</tr>
+<tr class="even">
+<td align="center">12</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
+</tr>
+<tr class="odd">
+<td align="center">13</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">14</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+<tr class="odd">
+<td align="center">15</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-03</td>
+</tr>
+</tbody>
+</table>
+<table style="width:58%;">
+<colgroup>
+<col width="16%" />
+<col width="12%" />
+<col width="11%" />
+<col width="18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">where_key</th>
+<th align="center">region</th>
+<th align="center">state</th>
+<th align="center">city</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Bridgeport</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Hartford</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">MA</td>
+<td align="center">Boston</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">MA</td>
+<td align="center">Cambridge</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="8%" />
+<col width="17%" />
+<col width="16%" />
+<col width="9%" />
+<col width="26%" />
+<col width="10%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_key</th>
+<th align="center">when_available_key</th>
+<th align="center">when_received_key</th>
+<th align="center">where_key</th>
+<th align="center">pneumonia_and_influenza_deaths</th>
+<th align="center">all_deaths</th>
+<th align="center">nrow_agg</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">6</td>
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">46</td>
 <td align="center">1</td>
 </tr>
 <tr class="even">
-<td align="center">13</td>
-<td align="center">3</td>
-<td align="center">13</td>
-<td align="center">325</td>
+<td align="center">5</td>
+<td align="center">5</td>
+<td align="center">5</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">54</td>
 <td align="center">1</td>
 </tr>
 <tr class="odd">
-<td align="center">14</td>
-<td align="center">1</td>
+<td align="center">5</td>
 <td align="center">8</td>
-<td align="center">45</td>
+<td align="center">6</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">43</td>
 <td align="center">1</td>
 </tr>
 <tr class="even">
-<td align="center">14</td>
+<td align="center">5</td>
+<td align="center">9</td>
+<td align="center">5</td>
 <td align="center">4</td>
-<td align="center">6</td>
+<td align="center">2</td>
 <td align="center">27</td>
 <td align="center">1</td>
 </tr>
 <tr class="odd">
+<td align="center">5</td>
+<td align="center">9</td>
+<td align="center">7</td>
+<td align="center">3</td>
+<td align="center">11</td>
+<td align="center">270</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">11</td>
+<td align="center">10</td>
+<td align="center">1</td>
+<td align="center">4</td>
+<td align="center">46</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">10</td>
+<td align="center">13</td>
+<td align="center">10</td>
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">40</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">13</td>
+<td align="center">12</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">47</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">10</td>
+<td align="center">14</td>
+<td align="center">10</td>
+<td align="center">3</td>
+<td align="center">12</td>
+<td align="center">285</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
 <td align="center">15</td>
 <td align="center">3</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">63</td>
+<td align="center">1</td>
+</tr>
+</tbody>
+</table>
+<p>We can see that the tables associated with the <em>when</em>
+dimension contain the same instances and the fact table has been updated
+appropriately.</p>
+<p>In this example, the field names have been preserved, but surely we
+may want all tables to have the same field names, except for the
+surrogate key. This can be easily achieved by indicating that we want
+the names of the fields of the role-playing dimension or by indicating
+new names in the function. The first alternative is shown below, using
+the <code>rpd_att_names</code> parameter.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>db_2 <span class="ot">&lt;-</span> db <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="fu">role_playing_dimension</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="at">rpd =</span> <span class="st">&quot;when&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    <span class="at">roles =</span> <span class="fu">c</span>(<span class="st">&quot;when_available&quot;</span>, <span class="st">&quot;when_received&quot;</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="at">rpd_att_names =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  )</span></code></pre></div>
+<p>In this case, the schema is displayed as the result since the content
+of the tables is the same.</p>
+<div class="grViz html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a9a6327b67e5741dca4c" style="width:288px;height:288px;"></div>
+<script type="application/json" data-for="htmlwidget-a9a6327b67e5741dca4c">{"x":{"diagram":"#data_model\ndigraph {\ngraph [rankdir=LR tooltip=\"Data Model\" ]\n\nnode [margin=0 fontcolor = \"#444444\" ]\n\nedge [color = \"#555555\", arrowsize = 1, ]\n\npack=true\npackmode= \"node\"\n\n  \"mrs_cause\" [id = \"mrs_cause\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_cause<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_available_key\">when_available_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_received_key\">when_received_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">pneumonia_and_influenza_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">all_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when\" [id = \"when\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_key\"><U>when_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week_ending_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when_available\" [id = \"when_available\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when_available<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_available_key\"><U>when_available_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week_ending_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when_received\" [id = \"when_received\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when_received<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_received_key\"><U>when_received_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week_ending_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"where\" [id = \"where\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">where<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"where_key\"><U>where_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">region<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">state<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">city<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n\"mrs_cause\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_cause_1\"]\n\"mrs_cause\":\"when_available_key\"->\"when_available\":\"when_available_key\" [id=\"mrs_cause_2\"]\n\"mrs_cause\":\"when_received_key\"->\"when_received\":\"when_received_key\" [id=\"mrs_cause_3\"]\n\"mrs_cause\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_cause_4\"]\n}","config":{"engine":null,"options":null}},"evals":[],"jsHooks":[]}</script>
+<p>The physical tables are kept in the star database but we work with a
+RDBMS and we want to work with only one physical table for the
+dimension, the rest of the tables can be easily defined by views.</p>
+</div>
+</div>
+<div id="a-constellation" class="section level1">
+<h1>A constellation</h1>
+<p>With several star databases we can define a constellation where stars
+can share dimensions. Common dimensions must have the same name and
+structure. In the case of having role-playing dimensions and role
+dimensions, this must be taken into account since the shared dimensions
+must be transformed into conformed dimensions, but the package takes
+care of this automatically, as we will see below.</p>
+<div id="second-star-database" class="section level2">
+<h2>Second star database</h2>
+<p>We start with a similar dataset, with dates added to the original
+dataset, as shown below.</p>
+<table style="width:100%;">
+<colgroup>
+<col width="7%" />
+<col width="7%" />
+<col width="7%" />
+<col width="12%" />
+<col width="12%" />
+<col width="12%" />
+<col width="3%" />
+<col width="3%" />
+<col width="9%" />
+<col width="4%" />
+<col width="3%" />
+<col width="6%" />
+<col width="6%" />
+<col width="4%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Arrival Year</th>
+<th align="center">Arrival Week</th>
+<th align="center">Arrival Date</th>
+<th align="center">Data Availability Year</th>
+<th align="center">Data Availability Week</th>
+<th align="center">Data Availability Date</th>
+<th align="center">Year</th>
+<th align="center">WEEK</th>
+<th align="center">Week Ending Date</th>
+<th align="center">REGION</th>
+<th align="center">State</th>
+<th align="center">City</th>
+<th align="center">Age Range</th>
+<th align="center">Deaths</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-05</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+<td align="center">1</td>
+<td align="center">MA</td>
+<td align="center">Cambridge</td>
+<td align="center">65+ years</td>
+<td align="center">23</td>
+</tr>
+<tr class="even">
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+<td align="center">1</td>
+<td align="center">MA</td>
+<td align="center">Boston</td>
+<td align="center">25-44 years</td>
+<td align="center">8</td>
+</tr>
+<tr class="odd">
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-11</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-17</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Hartford</td>
+<td align="center">&lt;1 year</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-05</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Bridgeport</td>
+<td align="center">45-64 years</td>
+<td align="center">15</td>
+</tr>
+<tr class="odd">
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+<td align="center">1962</td>
 <td align="center">9</td>
-<td align="center">244</td>
+<td align="center">1962-03-03</td>
 <td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Hartford</td>
+<td align="center">25-44 years</td>
+<td align="center">5</td>
 </tr>
 <tr class="even">
-<td align="center">16</td>
-<td align="center">4</td>
-<td align="center">0</td>
-<td align="center">26</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-02-26</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-01</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Hartford</td>
+<td align="center">25-44 years</td>
 <td align="center">1</td>
 </tr>
-</tbody>
-</table>
-<p>It can be seen that the data in the fact table has the same
-granularity as the data in the original flat table (they have the same
-number of records).</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">nrow</span>(ft_num)</span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt; [1] 20</span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="fu">nrow</span>(l_cause[[<span class="dv">3</span>]])</span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; [1] 20</span></span></code></pre></div>
-<p>The same can be seen in the <code>num</code> field in the fact table
-which shows the number of records added to get each record, in this case
-it is always 1. Dimensions contain only the distinct value combinations
-for the attribute sets they contain.</p>
-<div id="rename-fact-measures-and-dimension-attributes" class="section level4">
-<h4>Rename fact measures and dimension attributes</h4>
-<p>In this case it has not been considered necessary, but if desired, it
-is possible to rename both the dimension attributes and the fact
-measures.</p>
-<p>To do this, the functions
-<code>get_dimension_attribute_names()</code> and
-<code>get_measure_names()</code> are available to consult the current
-names, and <code>set_dimension_attribute_names()</code> and
-<code>set_measure_names()</code> to change them if necessary.</p>
-</div>
-</div>
-<div id="constellations" class="section level3">
-<h3>Constellations</h3>
-<p>From two or more star databases we can define a constellation.</p>
-<div id="definition-of-star-databases" class="section level4">
-<h4>Definition of star databases</h4>
-<p>To more effectively demonstrate the functionality, we are going to
-define the star databases with a coarser granularity than the original
-flat tables; additionally we are going to select only some of the rows
-from the flat tables.</p>
-<p>For the cause case is shown below.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>when <span class="ot">&lt;-</span> <span class="fu">dimension_schema</span>(<span class="at">name =</span> <span class="st">&quot;When&quot;</span>,</span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>                         <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>))</span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>where <span class="ot">&lt;-</span> <span class="fu">dimension_schema</span>(<span class="at">name =</span> <span class="st">&quot;Where&quot;</span>,</span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>                          <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;State&quot;</span>,</span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>                                         <span class="st">&quot;City&quot;</span>))</span>
-<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>s_cause <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  <span class="fu">define_facts</span>(<span class="at">name =</span> <span class="st">&quot;MRS Cause&quot;</span>,</span>
-<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>               <span class="at">measures =</span> <span class="fu">c</span>(<span class="st">&quot;Pneumonia and Influenza Deaths&quot;</span>,</span>
-<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>                            <span class="st">&quot;All Deaths&quot;</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>  <span class="fu">define_dimension</span>(when) <span class="sc">|&gt;</span></span>
-<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>  <span class="fu">define_dimension</span>(where)</span>
-<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a></span>
-<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>ft_num2 <span class="ot">&lt;-</span> ft_num <span class="sc">|&gt;</span></span>
-<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(Year <span class="sc">&gt;</span> <span class="st">&quot;1962&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(City <span class="sc">==</span> <span class="st">&quot;Boston&quot;</span> <span class="sc">|</span> City <span class="sc">==</span> <span class="st">&quot;Bridgeport&quot;</span>)</span>
-<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a></span>
-<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>db_cause <span class="ot">&lt;-</span> <span class="fu">star_database</span>(s_cause, ft_num2) <span class="sc">|&gt;</span></span>
-<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>  <span class="fu">snake_case</span>()</span>
-<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a></span>
-<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>l_cause <span class="ot">&lt;-</span> db_cause <span class="sc">|&gt;</span></span>
-<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span></code></pre></div>
-<p>The tables obtained as a result are shown below.</p>
-<table style="width:25%;">
-<colgroup>
-<col width="15%" />
-<col width="9%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">when_key</th>
-<th align="center">year</th>
-</tr>
-</thead>
-<tbody>
 <tr class="odd">
-<td align="center">1</td>
-<td align="center">1963</td>
-</tr>
-<tr class="even">
+<td align="center">1962</td>
 <td align="center">2</td>
-<td align="center">1964</td>
+<td align="center">1962-01-13</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Hartford</td>
+<td align="center">1-24 years</td>
+<td align="center">1</td>
 </tr>
-</tbody>
-</table>
-<table style="width:46%;">
-<colgroup>
-<col width="16%" />
-<col width="11%" />
-<col width="18%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">where_key</th>
-<th align="center">state</th>
-<th align="center">city</th>
+<tr class="even">
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-08</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-14</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+<td align="center">1</td>
+<td align="center">MA</td>
+<td align="center">Boston</td>
+<td align="center">65+ years</td>
+<td align="center">142</td>
 </tr>
-</thead>
-<tbody>
 <tr class="odd">
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-25</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-01</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+<td align="center">1</td>
+<td align="center">MA</td>
+<td align="center">Cambridge</td>
+<td align="center">45-64 years</td>
+<td align="center">8</td>
+</tr>
+<tr class="even">
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Hartford</td>
+<td align="center">1-24 years</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
 <td align="center">1</td>
 <td align="center">CT</td>
 <td align="center">Bridgeport</td>
+<td align="center">65+ years</td>
+<td align="center">25</td>
 </tr>
 <tr class="even">
-<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-02-26</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+<td align="center">1</td>
 <td align="center">MA</td>
 <td align="center">Boston</td>
+<td align="center">45-64 years</td>
+<td align="center">85</td>
 </tr>
 </tbody>
 </table>
-<table>
-<colgroup>
-<col width="13%" />
-<col width="14%" />
-<col width="40%" />
-<col width="15%" />
-<col width="15%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">when_key</th>
-<th align="center">where_key</th>
-<th align="center">pneumonia_and_influenza_deaths</th>
-<th align="center">all_deaths</th>
-<th align="center">nrow_agg</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">46</td>
-<td align="center">1</td>
-</tr>
-<tr class="even">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">10</td>
-<td align="center">276</td>
-<td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">2</td>
-<td align="center">1</td>
-<td align="center">8</td>
-<td align="center">45</td>
-<td align="center">1</td>
-</tr>
-<tr class="even">
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">22</td>
-<td align="center">569</td>
-<td align="center">2</td>
-</tr>
-</tbody>
-</table>
-<p>Next, we define the star database and the rest of the operations in
-the case of age groups.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>s_age <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  <span class="fu">define_facts</span>(<span class="at">name =</span> <span class="st">&quot;MRS Age&quot;</span>,</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>               <span class="at">measures =</span> <span class="fu">c</span>(<span class="st">&quot;All Deaths&quot;</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="fu">define_dimension</span>(when) <span class="sc">|&gt;</span></span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="fu">define_dimension</span>(where) <span class="sc">|&gt;</span></span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="fu">define_dimension</span>(<span class="at">name =</span> <span class="st">&quot;Who&quot;</span>,</span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>                         <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;Age&quot;</span>))</span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a></span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>ft_age2 <span class="ot">&lt;-</span> ft_age <span class="sc">|&gt;</span></span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(Year <span class="sc">&lt;</span> <span class="st">&quot;1964&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(City <span class="sc">!=</span> <span class="st">&quot;Boston&quot;</span> <span class="sc">&amp;</span> City <span class="sc">!=</span> <span class="st">&quot;Bridgeport&quot;</span>)</span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a></span>
-<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>db_age <span class="ot">&lt;-</span> <span class="fu">star_database</span>(s_age, ft_age2) <span class="sc">|&gt;</span></span>
-<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>  <span class="fu">snake_case</span>()</span>
-<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a></span>
-<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>l_age <span class="ot">&lt;-</span> db_age <span class="sc">|&gt;</span></span>
-<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span></code></pre></div>
-<p>The tables obtained as a result are also shown below.</p>
-<table style="width:25%;">
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">dput</span>(<span class="fu">colnames</span>(ft_age_rpd))</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; c(&quot;Arrival Year&quot;, &quot;Arrival Week&quot;, &quot;Arrival Date&quot;, &quot;Data Availability Year&quot;, </span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; &quot;Data Availability Week&quot;, &quot;Data Availability Date&quot;, &quot;Year&quot;, &quot;WEEK&quot;, </span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; &quot;Week Ending Date&quot;, &quot;REGION&quot;, &quot;State&quot;, &quot;City&quot;, &quot;Age Range&quot;, &quot;Deaths&quot;</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; )</span></span></code></pre></div>
+<p>The definition of the star schema is shown below.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>s_2 <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="fu">define_facts</span>(<span class="fu">fact_schema</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;MRS Age&quot;</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>    <span class="at">measures =</span> <span class="fu">c</span>(</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>      <span class="st">&quot;Deaths&quot;</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    )</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="fu">define_dimension</span>(when) <span class="sc">|&gt;</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="fu">define_dimension</span>(when_available) <span class="sc">|&gt;</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="fu">define_dimension</span>(<span class="fu">dimension_schema</span>(</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;When Arrived&quot;</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>    <span class="at">attributes =</span> <span class="fu">c</span>(</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>      <span class="st">&quot;Arrival Year&quot;</span>,</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>      <span class="st">&quot;Arrival Week&quot;</span>,</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>      <span class="st">&quot;Arrival Date&quot;</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>    )</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  <span class="fu">define_dimension</span>(<span class="fu">dimension_schema</span>(</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Who&quot;</span>,</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>    <span class="at">attributes =</span> <span class="fu">c</span>(</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>      <span class="st">&quot;Age Range&quot;</span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>    )</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>  <span class="fu">define_dimension</span>(where)</span></code></pre></div>
+<p>We have reused the definitions of the <em>When</em> and <em>When
+Available</em> dimensions from the previous schema. A new dimension
+<em>When Arrived</em> has been added with different names in order to
+show how the definition works.</p>
+<p>The definition of the star database is shown below.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>db_3 <span class="ot">&lt;-</span> <span class="fu">star_database</span>(s_2, ft_age_rpd) <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="fu">role_playing_dimension</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>    <span class="at">rpd =</span> <span class="st">&quot;When Arrived&quot;</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    <span class="at">roles =</span> <span class="fu">c</span>(<span class="st">&quot;When Available&quot;</span>),</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    <span class="at">att_names =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>, <span class="st">&quot;Week&quot;</span>, <span class="st">&quot;Week Ending Date&quot;</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>  <span class="fu">snake_case</span>()</span></code></pre></div>
+<p>In this case, a role-playing dimension and a role dimension have been
+defined. The <em>When</em> dimension has not been included in this
+definition also to show how the system works.</p>
+<p>The tables of the new star database are shown below.</p>
+<table style="width:61%;">
 <colgroup>
 <col width="15%" />
 <col width="9%" />
+<col width="9%" />
+<col width="26%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="center">when_key</th>
 <th align="center">year</th>
+<th align="center">week</th>
+<th align="center">week_ending_date</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="center">1</td>
 <td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
 </tr>
 <tr class="even">
 <td align="center">2</td>
-<td align="center">1963</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-03</td>
 </tr>
 </tbody>
 </table>
-<table style="width:44%;">
+<table style="width:75%;">
 <colgroup>
-<col width="16%" />
-<col width="11%" />
-<col width="16%" />
+<col width="29%" />
+<col width="9%" />
+<col width="9%" />
+<col width="26%" />
 </colgroup>
 <thead>
 <tr class="header">
-<th align="center">where_key</th>
-<th align="center">state</th>
-<th align="center">city</th>
+<th align="center">when_available_key</th>
+<th align="center">year</th>
+<th align="center">week</th>
+<th align="center">week_ending_date</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="center">1</td>
-<td align="center">CT</td>
-<td align="center">Hartford</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
 </tr>
 <tr class="even">
 <td align="center">2</td>
-<td align="center">MA</td>
-<td align="center">Cambridge</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+</tr>
+<tr class="odd">
+<td align="center">9</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-05</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+<tr class="odd">
+<td align="center">11</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-08</td>
+</tr>
+<tr class="even">
+<td align="center">12</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-11</td>
+</tr>
+<tr class="odd">
+<td align="center">13</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-14</td>
+</tr>
+<tr class="even">
+<td align="center">14</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-17</td>
+</tr>
+<tr class="odd">
+<td align="center">15</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+</tr>
+<tr class="even">
+<td align="center">16</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-25</td>
+</tr>
+<tr class="odd">
+<td align="center">17</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-02-26</td>
+</tr>
+<tr class="even">
+<td align="center">18</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-01</td>
+</tr>
+</tbody>
+</table>
+<table style="width:72%;">
+<colgroup>
+<col width="26%" />
+<col width="9%" />
+<col width="9%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_arrived_key</th>
+<th align="center">year</th>
+<th align="center">week</th>
+<th align="center">week_ending_date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+</tr>
+<tr class="odd">
+<td align="center">9</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-05</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+<tr class="odd">
+<td align="center">11</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-08</td>
+</tr>
+<tr class="even">
+<td align="center">12</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-11</td>
+</tr>
+<tr class="odd">
+<td align="center">13</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-14</td>
+</tr>
+<tr class="even">
+<td align="center">14</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-17</td>
+</tr>
+<tr class="odd">
+<td align="center">15</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+</tr>
+<tr class="even">
+<td align="center">16</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-25</td>
+</tr>
+<tr class="odd">
+<td align="center">17</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-02-26</td>
+</tr>
+<tr class="even">
+<td align="center">18</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-01</td>
 </tr>
 </tbody>
 </table>
@@ -3029,7 +3302,7 @@ the case of age groups.</p>
 <thead>
 <tr class="header">
 <th align="center">who_key</th>
-<th align="center">age</th>
+<th align="center">age_range</th>
 </tr>
 </thead>
 <tbody>
@@ -3055,180 +3328,17 @@ the case of age groups.</p>
 </tr>
 </tbody>
 </table>
-<table style="width:82%;">
-<colgroup>
-<col width="15%" />
-<col width="16%" />
-<col width="13%" />
-<col width="18%" />
-<col width="18%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">when_key</th>
-<th align="center">where_key</th>
-<th align="center">who_key</th>
-<th align="center">all_deaths</th>
-<th align="center">nrow_agg</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">1</td>
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">2</td>
-</tr>
-<tr class="even">
-<td align="center">1</td>
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">2</td>
-</tr>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">1</td>
-<td align="center">3</td>
-<td align="center">35</td>
-<td align="center">2</td>
-</tr>
-<tr class="even">
-<td align="center">1</td>
-<td align="center">1</td>
-<td align="center">4</td>
-<td align="center">54</td>
-<td align="center">2</td>
-</tr>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">1</td>
-<td align="center">5</td>
-<td align="center">10</td>
-<td align="center">2</td>
-</tr>
-<tr class="even">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">1</td>
-<td align="center">0</td>
-<td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">1</td>
-</tr>
-<tr class="even">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">7</td>
-<td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">4</td>
-<td align="center">29</td>
-<td align="center">1</td>
-</tr>
-<tr class="even">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">5</td>
-<td align="center">1</td>
-<td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">2</td>
-<td align="center">1</td>
-<td align="center">1</td>
-<td align="center">5</td>
-<td align="center">3</td>
-</tr>
-<tr class="even">
-<td align="center">2</td>
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">13</td>
-<td align="center">3</td>
-</tr>
-<tr class="odd">
-<td align="center">2</td>
-<td align="center">1</td>
-<td align="center">3</td>
-<td align="center">51</td>
-<td align="center">3</td>
-</tr>
-<tr class="even">
-<td align="center">2</td>
-<td align="center">1</td>
-<td align="center">4</td>
-<td align="center">107</td>
-<td align="center">3</td>
-</tr>
-<tr class="odd">
-<td align="center">2</td>
-<td align="center">1</td>
-<td align="center">5</td>
-<td align="center">16</td>
-<td align="center">3</td>
-</tr>
-</tbody>
-</table>
-<p>As we have filtered the data, it can be seen that the dimension
-tables only contain the necessary data for each star database but, for
-common dimensions, they share the same structure.</p>
-</div>
-<div id="constellation-definition" class="section level4">
-<h4>Constellation definition</h4>
-<p>Next we define a constellation formed by the two star databases.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>ct <span class="ot">&lt;-</span> <span class="fu">constellation</span>(<span class="st">&quot;MRS&quot;</span>, <span class="fu">list</span>(db_cause, db_age))</span></code></pre></div>
-<p>Constellation tables can also be exported as a tibble list.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>lc <span class="ot">&lt;-</span> ct <span class="sc">|&gt;</span></span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span></code></pre></div>
-<p>Below are the tables of the constellation’s star databases. The
-instances of the dimensions have been integrated so that the tables are
-common to both databases.</p>
-<table style="width:25%;">
-<colgroup>
-<col width="15%" />
-<col width="9%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="center">when_key</th>
-<th align="center">year</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">1962</td>
-</tr>
-<tr class="even">
-<td align="center">2</td>
-<td align="center">1963</td>
-</tr>
-<tr class="odd">
-<td align="center">3</td>
-<td align="center">1964</td>
-</tr>
-</tbody>
-</table>
-<table style="width:46%;">
+<table style="width:58%;">
 <colgroup>
 <col width="16%" />
+<col width="12%" />
 <col width="11%" />
 <col width="18%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="center">where_key</th>
+<th align="center">region</th>
 <th align="center">state</th>
 <th align="center">city</th>
 </tr>
@@ -3236,21 +3346,888 @@ common to both databases.</p>
 <tbody>
 <tr class="odd">
 <td align="center">1</td>
+<td align="center">1</td>
 <td align="center">CT</td>
 <td align="center">Bridgeport</td>
 </tr>
 <tr class="even">
 <td align="center">2</td>
+<td align="center">1</td>
 <td align="center">CT</td>
 <td align="center">Hartford</td>
 </tr>
 <tr class="odd">
 <td align="center">3</td>
+<td align="center">1</td>
 <td align="center">MA</td>
 <td align="center">Boston</td>
 </tr>
 <tr class="even">
 <td align="center">4</td>
+<td align="center">1</td>
+<td align="center">MA</td>
+<td align="center">Cambridge</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="11%" />
+<col width="22%" />
+<col width="20%" />
+<col width="10%" />
+<col width="12%" />
+<col width="9%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_key</th>
+<th align="center">when_available_key</th>
+<th align="center">when_arrived_key</th>
+<th align="center">who_key</th>
+<th align="center">where_key</th>
+<th align="center">deaths</th>
+<th align="center">nrow_agg</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">5</td>
+<td align="center">4</td>
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">25</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">2</td>
+<td align="center">7</td>
+<td align="center">6</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">10</td>
+<td align="center">4</td>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">8</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">9</td>
+<td align="center">8</td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">15</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">3</td>
+<td align="center">9</td>
+<td align="center">8</td>
+<td align="center">4</td>
+<td align="center">4</td>
+<td align="center">23</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">13</td>
+<td align="center">11</td>
+<td align="center">4</td>
+<td align="center">3</td>
+<td align="center">142</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">3</td>
+<td align="center">14</td>
+<td align="center">12</td>
+<td align="center">5</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">4</td>
+<td align="center">17</td>
+<td align="center">15</td>
+<td align="center">3</td>
+<td align="center">3</td>
+<td align="center">85</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">18</td>
+<td align="center">16</td>
+<td align="center">3</td>
+<td align="center">4</td>
+<td align="center">8</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">4</td>
+<td align="center">18</td>
+<td align="center">17</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">5</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">5</td>
+<td align="center">1</td>
+</tr>
+</tbody>
+</table>
+<p>It can be seen that the When dimension is independent, it does not
+have the same instances as the other dimensions.</p>
+</div>
+<div id="constellation" class="section level2">
+<h2>Constellation</h2>
+<p>The definition of the constellation is shown below.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>ct <span class="ot">&lt;-</span> <span class="fu">constellation</span>(<span class="st">&quot;MRS&quot;</span>, <span class="fu">list</span>(db_2, db_3))</span></code></pre></div>
+<p>Below we can see the graphic representation of the tables that
+compose it.</p>
+<div class="grViz html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-9b575b61ca247943a888" style="width:288px;height:288px;"></div>
+<script type="application/json" data-for="htmlwidget-9b575b61ca247943a888">{"x":{"diagram":"#data_model\ndigraph {\ngraph [rankdir=LR tooltip=\"Data Model\" ]\n\nnode [margin=0 fontcolor = \"#444444\" ]\n\nedge [color = \"#555555\", arrowsize = 1, ]\n\npack=true\npackmode= \"node\"\n\n  \"mrs_age\" [id = \"mrs_age\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_age<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_available_key\">when_available_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_arrived_key\">when_arrived_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"who_key\">who_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"mrs_cause\" [id = \"mrs_cause\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_cause<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_available_key\">when_available_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_received_key\">when_received_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">pneumonia_and_influenza_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">all_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when\" [id = \"when\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_key\"><U>when_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week_ending_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when_arrived\" [id = \"when_arrived\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when_arrived<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_arrived_key\"><U>when_arrived_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week_ending_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when_available\" [id = \"when_available\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when_available<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_available_key\"><U>when_available_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week_ending_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when_received\" [id = \"when_received\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when_received<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_received_key\"><U>when_received_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">week_ending_date<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"where\" [id = \"where\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">where<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"where_key\"><U>where_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">region<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">state<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">city<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"who\" [id = \"who\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">who<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"who_key\"><U>who_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">age_range<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n\"mrs_cause\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_cause_1\"]\n\"mrs_age\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_age_1\"]\n\"mrs_age\":\"when_arrived_key\"->\"when_arrived\":\"when_arrived_key\" [id=\"mrs_age_2\"]\n\"mrs_cause\":\"when_available_key\"->\"when_available\":\"when_available_key\" [id=\"mrs_cause_2\"]\n\"mrs_age\":\"when_available_key\"->\"when_available\":\"when_available_key\" [id=\"mrs_age_3\"]\n\"mrs_cause\":\"when_received_key\"->\"when_received\":\"when_received_key\" [id=\"mrs_cause_3\"]\n\"mrs_cause\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_cause_4\"]\n\"mrs_age\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_age_4\"]\n\"mrs_age\":\"who_key\"->\"who\":\"who_key\" [id=\"mrs_age_5\"]\n}","config":{"engine":null,"options":null}},"evals":[],"jsHooks":[]}</script>
+<p>The situation is that the <em>When</em> dimension in this second star
+database is independent of the other dimensions, but it is a common
+dimension with the first star database: it has to be a conformed
+dimension.</p>
+<p>Below are the instances of the tables to better appreciate the
+result.</p>
+<table style="width:61%;">
+<colgroup>
+<col width="15%" />
+<col width="9%" />
+<col width="9%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_key</th>
+<th align="center">year</th>
+<th align="center">week</th>
+<th align="center">week_ending_date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">1</td>
+<td align="center">1962-01-06</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-11</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-16</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-17</td>
+</tr>
+<tr class="odd">
+<td align="center">9</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-18</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">11</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+</tr>
+<tr class="even">
+<td align="center">12</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
+</tr>
+<tr class="odd">
+<td align="center">13</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">14</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+</tr>
+<tr class="odd">
+<td align="center">15</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-05</td>
+</tr>
+<tr class="even">
+<td align="center">16</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+<tr class="odd">
+<td align="center">17</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-08</td>
+</tr>
+<tr class="even">
+<td align="center">18</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-11</td>
+</tr>
+<tr class="odd">
+<td align="center">19</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-14</td>
+</tr>
+<tr class="even">
+<td align="center">20</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-17</td>
+</tr>
+<tr class="odd">
+<td align="center">21</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+</tr>
+<tr class="even">
+<td align="center">22</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-25</td>
+</tr>
+<tr class="odd">
+<td align="center">23</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-02-26</td>
+</tr>
+<tr class="even">
+<td align="center">24</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-01</td>
+</tr>
+<tr class="odd">
+<td align="center">25</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-03</td>
+</tr>
+</tbody>
+</table>
+<table style="width:72%;">
+<colgroup>
+<col width="26%" />
+<col width="9%" />
+<col width="9%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_arrived_key</th>
+<th align="center">year</th>
+<th align="center">week</th>
+<th align="center">week_ending_date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">1</td>
+<td align="center">1962-01-06</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-11</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-16</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-17</td>
+</tr>
+<tr class="odd">
+<td align="center">9</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-18</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">11</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+</tr>
+<tr class="even">
+<td align="center">12</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
+</tr>
+<tr class="odd">
+<td align="center">13</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">14</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+</tr>
+<tr class="odd">
+<td align="center">15</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-05</td>
+</tr>
+<tr class="even">
+<td align="center">16</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+<tr class="odd">
+<td align="center">17</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-08</td>
+</tr>
+<tr class="even">
+<td align="center">18</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-11</td>
+</tr>
+<tr class="odd">
+<td align="center">19</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-14</td>
+</tr>
+<tr class="even">
+<td align="center">20</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-17</td>
+</tr>
+<tr class="odd">
+<td align="center">21</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+</tr>
+<tr class="even">
+<td align="center">22</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-25</td>
+</tr>
+<tr class="odd">
+<td align="center">23</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-02-26</td>
+</tr>
+<tr class="even">
+<td align="center">24</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-01</td>
+</tr>
+<tr class="odd">
+<td align="center">25</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-03</td>
+</tr>
+</tbody>
+</table>
+<table style="width:75%;">
+<colgroup>
+<col width="29%" />
+<col width="9%" />
+<col width="9%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_available_key</th>
+<th align="center">year</th>
+<th align="center">week</th>
+<th align="center">week_ending_date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">1</td>
+<td align="center">1962-01-06</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-11</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-16</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-17</td>
+</tr>
+<tr class="odd">
+<td align="center">9</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-18</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">11</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+</tr>
+<tr class="even">
+<td align="center">12</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
+</tr>
+<tr class="odd">
+<td align="center">13</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">14</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+</tr>
+<tr class="odd">
+<td align="center">15</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-05</td>
+</tr>
+<tr class="even">
+<td align="center">16</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+<tr class="odd">
+<td align="center">17</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-08</td>
+</tr>
+<tr class="even">
+<td align="center">18</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-11</td>
+</tr>
+<tr class="odd">
+<td align="center">19</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-14</td>
+</tr>
+<tr class="even">
+<td align="center">20</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-17</td>
+</tr>
+<tr class="odd">
+<td align="center">21</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+</tr>
+<tr class="even">
+<td align="center">22</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-25</td>
+</tr>
+<tr class="odd">
+<td align="center">23</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-02-26</td>
+</tr>
+<tr class="even">
+<td align="center">24</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-01</td>
+</tr>
+<tr class="odd">
+<td align="center">25</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-03</td>
+</tr>
+</tbody>
+</table>
+<table style="width:74%;">
+<colgroup>
+<col width="27%" />
+<col width="9%" />
+<col width="9%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">when_received_key</th>
+<th align="center">year</th>
+<th align="center">week</th>
+<th align="center">week_ending_date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1962</td>
+<td align="center">1</td>
+<td align="center">1962-01-06</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-14</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1962</td>
+<td align="center">11</td>
+<td align="center">1962-03-15</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-11</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">1962</td>
+<td align="center">2</td>
+<td align="center">1962-01-13</td>
+</tr>
+<tr class="even">
+<td align="center">6</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-15</td>
+</tr>
+<tr class="odd">
+<td align="center">7</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-16</td>
+</tr>
+<tr class="even">
+<td align="center">8</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-17</td>
+</tr>
+<tr class="odd">
+<td align="center">9</td>
+<td align="center">1962</td>
+<td align="center">3</td>
+<td align="center">1962-01-18</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-27</td>
+</tr>
+<tr class="odd">
+<td align="center">11</td>
+<td align="center">1962</td>
+<td align="center">4</td>
+<td align="center">1962-01-28</td>
+</tr>
+<tr class="even">
+<td align="center">12</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-01-29</td>
+</tr>
+<tr class="odd">
+<td align="center">13</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-01</td>
+</tr>
+<tr class="even">
+<td align="center">14</td>
+<td align="center">1962</td>
+<td align="center">5</td>
+<td align="center">1962-02-03</td>
+</tr>
+<tr class="odd">
+<td align="center">15</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-05</td>
+</tr>
+<tr class="even">
+<td align="center">16</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-07</td>
+</tr>
+<tr class="odd">
+<td align="center">17</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-08</td>
+</tr>
+<tr class="even">
+<td align="center">18</td>
+<td align="center">1962</td>
+<td align="center">6</td>
+<td align="center">1962-02-11</td>
+</tr>
+<tr class="odd">
+<td align="center">19</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-14</td>
+</tr>
+<tr class="even">
+<td align="center">20</td>
+<td align="center">1962</td>
+<td align="center">7</td>
+<td align="center">1962-02-17</td>
+</tr>
+<tr class="odd">
+<td align="center">21</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-24</td>
+</tr>
+<tr class="even">
+<td align="center">22</td>
+<td align="center">1962</td>
+<td align="center">8</td>
+<td align="center">1962-02-25</td>
+</tr>
+<tr class="odd">
+<td align="center">23</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-02-26</td>
+</tr>
+<tr class="even">
+<td align="center">24</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-01</td>
+</tr>
+<tr class="odd">
+<td align="center">25</td>
+<td align="center">1962</td>
+<td align="center">9</td>
+<td align="center">1962-03-03</td>
+</tr>
+</tbody>
+</table>
+<table style="width:58%;">
+<colgroup>
+<col width="16%" />
+<col width="12%" />
+<col width="11%" />
+<col width="18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">where_key</th>
+<th align="center">region</th>
+<th align="center">state</th>
+<th align="center">city</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Bridgeport</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">CT</td>
+<td align="center">Hartford</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">MA</td>
+<td align="center">Boston</td>
+</tr>
+<tr class="even">
+<td align="center">4</td>
+<td align="center">1</td>
 <td align="center">MA</td>
 <td align="center">Cambridge</td>
 </tr>
@@ -3264,7 +4241,7 @@ common to both databases.</p>
 <thead>
 <tr class="header">
 <th align="center">who_key</th>
-<th align="center">age</th>
+<th align="center">age_range</th>
 </tr>
 </thead>
 <tbody>
@@ -3292,15 +4269,19 @@ common to both databases.</p>
 </table>
 <table>
 <colgroup>
-<col width="13%" />
-<col width="14%" />
-<col width="40%" />
-<col width="15%" />
-<col width="15%" />
+<col width="8%" />
+<col width="17%" />
+<col width="16%" />
+<col width="9%" />
+<col width="26%" />
+<col width="10%" />
+<col width="10%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="center">when_key</th>
+<th align="center">when_available_key</th>
+<th align="center">when_received_key</th>
 <th align="center">where_key</th>
 <th align="center">pneumonia_and_influenza_deaths</th>
 <th align="center">all_deaths</th>
@@ -3309,346 +4290,254 @@ common to both databases.</p>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="center">2</td>
 <td align="center">1</td>
-<td align="center">2</td>
+<td align="center">6</td>
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">3</td>
 <td align="center">46</td>
 <td align="center">1</td>
 </tr>
 <tr class="even">
+<td align="center">5</td>
+<td align="center">5</td>
+<td align="center">5</td>
 <td align="center">2</td>
-<td align="center">3</td>
-<td align="center">10</td>
-<td align="center">276</td>
+<td align="center">2</td>
+<td align="center">54</td>
 <td align="center">1</td>
 </tr>
 <tr class="odd">
-<td align="center">3</td>
-<td align="center">1</td>
+<td align="center">5</td>
 <td align="center">8</td>
-<td align="center">45</td>
+<td align="center">6</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">43</td>
 <td align="center">1</td>
 </tr>
 <tr class="even">
-<td align="center">3</td>
-<td align="center">3</td>
-<td align="center">22</td>
-<td align="center">569</td>
+<td align="center">5</td>
+<td align="center">9</td>
+<td align="center">5</td>
+<td align="center">4</td>
 <td align="center">2</td>
+<td align="center">27</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">9</td>
+<td align="center">7</td>
+<td align="center">3</td>
+<td align="center">11</td>
+<td align="center">270</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">11</td>
+<td align="center">10</td>
+<td align="center">1</td>
+<td align="center">4</td>
+<td align="center">46</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">10</td>
+<td align="center">13</td>
+<td align="center">10</td>
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">40</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">13</td>
+<td align="center">12</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">47</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">10</td>
+<td align="center">16</td>
+<td align="center">10</td>
+<td align="center">3</td>
+<td align="center">12</td>
+<td align="center">285</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">25</td>
+<td align="center">3</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">63</td>
+<td align="center">1</td>
 </tr>
 </tbody>
 </table>
-<table style="width:82%;">
+<table>
 <colgroup>
-<col width="15%" />
-<col width="16%" />
-<col width="13%" />
-<col width="18%" />
-<col width="18%" />
+<col width="11%" />
+<col width="22%" />
+<col width="20%" />
+<col width="10%" />
+<col width="12%" />
+<col width="9%" />
+<col width="11%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="center">when_key</th>
-<th align="center">where_key</th>
+<th align="center">when_available_key</th>
+<th align="center">when_arrived_key</th>
 <th align="center">who_key</th>
-<th align="center">all_deaths</th>
+<th align="center">where_key</th>
+<th align="center">deaths</th>
 <th align="center">nrow_agg</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">2</td>
-</tr>
-<tr class="even">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">2</td>
-</tr>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">35</td>
-<td align="center">2</td>
-</tr>
-<tr class="even">
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">4</td>
-<td align="center">54</td>
-<td align="center">2</td>
-</tr>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">2</td>
 <td align="center">5</td>
+<td align="center">5</td>
+<td align="center">5</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">11</td>
+<td align="center">10</td>
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">25</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">10</td>
+<td align="center">13</td>
+<td align="center">12</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">10</td>
+<td align="center">16</td>
 <td align="center">10</td>
 <td align="center">2</td>
-</tr>
-<tr class="even">
-<td align="center">1</td>
-<td align="center">4</td>
-<td align="center">1</td>
-<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">8</td>
 <td align="center">1</td>
 </tr>
 <tr class="odd">
+<td align="center">14</td>
+<td align="center">15</td>
+<td align="center">14</td>
+<td align="center">3</td>
 <td align="center">1</td>
-<td align="center">4</td>
-<td align="center">2</td>
-<td align="center">2</td>
+<td align="center">15</td>
 <td align="center">1</td>
 </tr>
 <tr class="even">
+<td align="center">14</td>
+<td align="center">15</td>
+<td align="center">14</td>
+<td align="center">4</td>
+<td align="center">4</td>
+<td align="center">23</td>
 <td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">14</td>
+<td align="center">19</td>
+<td align="center">17</td>
 <td align="center">4</td>
 <td align="center">3</td>
-<td align="center">7</td>
-<td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">1</td>
-<td align="center">4</td>
-<td align="center">4</td>
-<td align="center">29</td>
+<td align="center">142</td>
 <td align="center">1</td>
 </tr>
 <tr class="even">
+<td align="center">14</td>
+<td align="center">20</td>
+<td align="center">18</td>
+<td align="center">5</td>
+<td align="center">2</td>
 <td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">21</td>
+<td align="center">23</td>
+<td align="center">21</td>
+<td align="center">3</td>
+<td align="center">3</td>
+<td align="center">85</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">21</td>
+<td align="center">24</td>
+<td align="center">22</td>
+<td align="center">3</td>
 <td align="center">4</td>
+<td align="center">8</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">21</td>
+<td align="center">24</td>
+<td align="center">23</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">25</td>
+<td align="center">3</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">2</td>
 <td align="center">5</td>
 <td align="center">1</td>
-<td align="center">1</td>
-</tr>
-<tr class="odd">
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">1</td>
-<td align="center">5</td>
-<td align="center">3</td>
-</tr>
-<tr class="even">
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">13</td>
-<td align="center">3</td>
-</tr>
-<tr class="odd">
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">51</td>
-<td align="center">3</td>
-</tr>
-<tr class="even">
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">4</td>
-<td align="center">107</td>
-<td align="center">3</td>
-</tr>
-<tr class="odd">
-<td align="center">2</td>
-<td align="center">2</td>
-<td align="center">5</td>
-<td align="center">16</td>
-<td align="center">3</td>
 </tr>
 </tbody>
 </table>
-<p>These tables can be directly exported in the format required by the
-OLAP query tool that we are going to use.</p>
-</div>
-</div>
-</div>
-<div id="export-results" class="section level2">
-<h2>Export results</h2>
-<p>To continue working with the result of the implementation of the
-multidimensional database (star database or constellation) it can be
-exported as a <code>tibble</code> list, suitable for example to pass the
-data to a spreadsheet, or as an object of the class <code>dm</code>,
-which allows passing the data to a RDBMS.</p>
-<p>Generic functions are used, applicable to objects of both classes,
-<code>star_database</code> and <code>constellation</code>.</p>
-<div id="tibble-list" class="section level3">
-<h3><code>tibble</code> list</h3>
-<p>The following shows the results that are obtained for a
-<code>star_database</code> object.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>db_cause <span class="sc">|&gt;</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co">#&gt; $when</span></span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#&gt;   when_key year </span></span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;</span></span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co">#&gt; 1        1 1963 </span></span>
-<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co">#&gt; 2        2 1964 </span></span>
-<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="co">#&gt; $where</span></span>
-<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
-<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="co">#&gt;   where_key state city      </span></span>
-<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="co">#&gt;       &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     </span></span>
-<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="co">#&gt; 1         1 CT    Bridgeport</span></span>
-<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="co">#&gt; 2         2 MA    Boston    </span></span>
-<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a><span class="co">#&gt; $mrs_cause</span></span>
-<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 5</span></span>
-<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a><span class="co">#&gt;   when_key where_key pneumonia_and_influenza_deaths all_deaths nrow_agg</span></span>
-<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt;     &lt;int&gt;                          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
-<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a><span class="co">#&gt; 1        1         1                              2         46        1</span></span>
-<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a><span class="co">#&gt; 2        1         2                             10        276        1</span></span>
-<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a><span class="co">#&gt; 3        2         1                              8         45        1</span></span>
-<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a><span class="co">#&gt; 4        2         2                             22        569        2</span></span></code></pre></div>
-<p>Also for a <code>constellation</code> object.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>ct <span class="sc">|&gt;</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co">#&gt; $when</span></span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3 × 2</span></span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co">#&gt;   when_key year </span></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;</span></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co">#&gt; 1        1 1962 </span></span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="co">#&gt; 2        2 1963 </span></span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="co">#&gt; 3        3 1964 </span></span>
-<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="co">#&gt; $where</span></span>
-<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 3</span></span>
-<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="co">#&gt;   where_key state city      </span></span>
-<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="co">#&gt;       &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     </span></span>
-<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="co">#&gt; 1         1 CT    Bridgeport</span></span>
-<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; 2         2 CT    Hartford  </span></span>
-<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="co">#&gt; 3         3 MA    Boston    </span></span>
-<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="co">#&gt; 4         4 MA    Cambridge </span></span>
-<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="co">#&gt; $who</span></span>
-<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="co">#&gt; # A tibble: 5 × 2</span></span>
-<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="co">#&gt;   who_key age        </span></span>
-<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt; &lt;chr&gt;      </span></span>
-<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="co">#&gt; 1       1 1-24 years </span></span>
-<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a><span class="co">#&gt; 2       2 25-44 years</span></span>
-<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a><span class="co">#&gt; 3       3 45-64 years</span></span>
-<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="co">#&gt; 4       4 65+ years  </span></span>
-<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="co">#&gt; 5       5 &lt;1 year    </span></span>
-<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="co">#&gt; $mrs_cause</span></span>
-<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 5</span></span>
-<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="co">#&gt;   when_key where_key pneumonia_and_influenza_deaths all_deaths nrow_agg</span></span>
-<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt;     &lt;int&gt;                          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
-<span id="cb16-34"><a href="#cb16-34" tabindex="-1"></a><span class="co">#&gt; 1        2         1                              2         46        1</span></span>
-<span id="cb16-35"><a href="#cb16-35" tabindex="-1"></a><span class="co">#&gt; 2        2         3                             10        276        1</span></span>
-<span id="cb16-36"><a href="#cb16-36" tabindex="-1"></a><span class="co">#&gt; 3        3         1                              8         45        1</span></span>
-<span id="cb16-37"><a href="#cb16-37" tabindex="-1"></a><span class="co">#&gt; 4        3         3                             22        569        2</span></span>
-<span id="cb16-38"><a href="#cb16-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb16-39"><a href="#cb16-39" tabindex="-1"></a><span class="co">#&gt; $mrs_age</span></span>
-<span id="cb16-40"><a href="#cb16-40" tabindex="-1"></a><span class="co">#&gt; # A tibble: 15 × 5</span></span>
-<span id="cb16-41"><a href="#cb16-41" tabindex="-1"></a><span class="co">#&gt;    when_key where_key who_key all_deaths nrow_agg</span></span>
-<span id="cb16-42"><a href="#cb16-42" tabindex="-1"></a><span class="co">#&gt;       &lt;int&gt;     &lt;int&gt;   &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
-<span id="cb16-43"><a href="#cb16-43" tabindex="-1"></a><span class="co">#&gt;  1        1         2       1          2        2</span></span>
-<span id="cb16-44"><a href="#cb16-44" tabindex="-1"></a><span class="co">#&gt;  2        1         2       2          3        2</span></span>
-<span id="cb16-45"><a href="#cb16-45" tabindex="-1"></a><span class="co">#&gt;  3        1         2       3         35        2</span></span>
-<span id="cb16-46"><a href="#cb16-46" tabindex="-1"></a><span class="co">#&gt;  4        1         2       4         54        2</span></span>
-<span id="cb16-47"><a href="#cb16-47" tabindex="-1"></a><span class="co">#&gt;  5        1         2       5         10        2</span></span>
-<span id="cb16-48"><a href="#cb16-48" tabindex="-1"></a><span class="co">#&gt;  6        1         4       1          0        1</span></span>
-<span id="cb16-49"><a href="#cb16-49" tabindex="-1"></a><span class="co">#&gt;  7        1         4       2          2        1</span></span>
-<span id="cb16-50"><a href="#cb16-50" tabindex="-1"></a><span class="co">#&gt;  8        1         4       3          7        1</span></span>
-<span id="cb16-51"><a href="#cb16-51" tabindex="-1"></a><span class="co">#&gt;  9        1         4       4         29        1</span></span>
-<span id="cb16-52"><a href="#cb16-52" tabindex="-1"></a><span class="co">#&gt; 10        1         4       5          1        1</span></span>
-<span id="cb16-53"><a href="#cb16-53" tabindex="-1"></a><span class="co">#&gt; 11        2         2       1          5        3</span></span>
-<span id="cb16-54"><a href="#cb16-54" tabindex="-1"></a><span class="co">#&gt; 12        2         2       2         13        3</span></span>
-<span id="cb16-55"><a href="#cb16-55" tabindex="-1"></a><span class="co">#&gt; 13        2         2       3         51        3</span></span>
-<span id="cb16-56"><a href="#cb16-56" tabindex="-1"></a><span class="co">#&gt; 14        2         2       4        107        3</span></span>
-<span id="cb16-57"><a href="#cb16-57" tabindex="-1"></a><span class="co">#&gt; 15        2         2       5         16        3</span></span></code></pre></div>
-</div>
-<div id="md-object" class="section level3">
-<h3><code>md</code> object</h3>
-<p>The <a href="https://cran.r-project.org/package=dm">dm</a> package
-allows you to link tables implemented using the <code>tibble</code>
-class in R with tables in RDBMS.</p>
-<p>The following example shows the transformation of a
-<code>star_database</code> object to an object of class
-<code>dm</code>.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># star database</span></span>
-<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>db_cause_dm <span class="ot">&lt;-</span> db_cause <span class="sc">|&gt;</span></span>
-<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>  <span class="fu">as_dm_class</span>()</span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="fu">class</span>(db_cause_dm)</span>
-<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;dm&quot;</span></span>
-<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>db_cause_dm</span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt; ── Metadata ────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="co">#&gt; Tables: `when`, `where`, `mrs_cause`</span></span>
-<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co">#&gt; Columns: 10</span></span>
-<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="co">#&gt; Primary keys: 3</span></span>
-<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="co">#&gt; Foreign keys: 2</span></span></code></pre></div>
-<p>Also for a <code>constellation</code> object.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># constellation</span></span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>ct_dm <span class="ot">&lt;-</span> ct <span class="sc">|&gt;</span></span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>  <span class="fu">as_dm_class</span>(<span class="at">pk_facts =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="fu">class</span>(ct_dm)</span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;dm&quot;</span></span>
-<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>ct_dm</span>
-<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">#&gt; ── Metadata ────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="co">#&gt; Tables: `when`, `where`, `who`, `mrs_cause`, `mrs_age`</span></span>
-<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="co">#&gt; Columns: 17</span></span>
-<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="co">#&gt; Primary keys: 5</span></span>
-<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="co">#&gt; Foreign keys: 5</span></span></code></pre></div>
-<p>For example, the <code>dm</code> class object can be used to
-represent the <code>constellation</code> tables, as it’s shown in the
-following (it can also be used to store them in a DBMS).</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>ct_dm <span class="sc">|&gt;</span> </span>
-<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>  dm<span class="sc">::</span><span class="fu">dm_draw</span>(<span class="at">rankdir =</span> <span class="st">&quot;LR&quot;</span>, <span class="at">view_type =</span> <span class="st">&quot;all&quot;</span>)</span></code></pre></div>
-<div class="grViz html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-726c949daa6fad8d7698" style="width:288px;height:288px;"></div>
-<script type="application/json" data-for="htmlwidget-726c949daa6fad8d7698">{"x":{"diagram":"#data_model\ndigraph {\ngraph [rankdir=LR tooltip=\"Data Model\" ]\n\nnode [margin=0 fontcolor = \"#444444\" ]\n\nedge [color = \"#555555\", arrowsize = 1, ]\n\npack=true\npackmode= \"node\"\n\n  \"mrs_age\" [id = \"mrs_age\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_age<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"who_key\">who_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">all_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key, where_key, who_key\"><U>when_key, where_key, who_key<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"mrs_cause\" [id = \"mrs_cause\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_cause<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">pneumonia_and_influenza_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">all_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key, where_key\"><U>when_key, where_key<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when\" [id = \"when\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_key\"><U>when_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"where\" [id = \"where\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">where<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"where_key\"><U>where_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">state<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">city<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"who\" [id = \"who\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">who<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"who_key\"><U>who_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">age<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n\"mrs_cause\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_cause_1\"]\n\"mrs_age\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_age_1\"]\n\"mrs_cause\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_cause_2\"]\n\"mrs_age\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_age_2\"]\n\"mrs_age\":\"who_key\"->\"who\":\"who_key\" [id=\"mrs_age_3\"]\n}","config":{"engine":null,"options":null}},"evals":[],"jsHooks":[]}</script>
-<p>In the example below, a local <em>SQLite</em> database is used to
-demonstrate how to store the model in a database. <code>dm</code> works
-with any RDBMS supported by <code>DBI</code>.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>db <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbConnect</span>(RSQLite<span class="sc">::</span><span class="fu">SQLite</span>())</span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>ct_dm_db <span class="ot">&lt;-</span> dm<span class="sc">::</span><span class="fu">copy_dm_to</span>(db, ct_dm)</span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>ct_dm_db</span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt; ── Table source ────────────────────────────────────────────────────────────────</span></span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; src:  sqlite 3.41.2 []</span></span>
-<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a><span class="co">#&gt; ── Metadata ────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="co">#&gt; Tables: `when`, `where`, `who`, `mrs_cause`, `mrs_age`</span></span>
-<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co">#&gt; Columns: 17</span></span>
-<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="co">#&gt; Primary keys: 5</span></span>
-<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="co">#&gt; Foreign keys: 5</span></span>
-<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a>DBI<span class="sc">::</span><span class="fu">dbDisconnect</span>(db)</span></code></pre></div>
-</div>
+<p>We can see that all the tables with information related to
+<em>When</em> dimension have the same instances, including all the
+instances of both star databases. In this example, the dimension
+attributes have been renamed.</p>
+<p>The definition of the role-playing dimension and the role dimensions
+have been updated when integrating the two star databases. It can be
+queried using the following function.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>ct  <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="fu">get_role_playing_dimension_names</span>()</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; $rpd_1</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;when&quot;           &quot;when_arrived&quot;   &quot;when_available&quot; &quot;when_received&quot;</span></span></code></pre></div>
+<p>The role-playing and role dimensions that share instances are
+displayed.</p>
 </div>
 </div>
 <div id="conclusions" class="section level1">
 <h1>Conclusions</h1>
-<p><code>rolap</code> package offers a set of operations that allow us
-to transform flat tables into star databases. From several star
-databases you can define a constellation with conformed dimensions.</p>
-<p>Operations have been designed to be intuitive and easy to use. The
-result greatly facilitates the data transformation process for the
-exposed situation.</p>
-<p>The implementation of the multidimensional database obtained can be
-exported to work with multidimensional analysis tools on spreadsheets or
-RDBMS.</p>
-</div>
-<div id="references" class="section level1 unnumbered">
-<h1 class="unnumbered">References</h1>
-<div id="refs" class="references csl-bib-body hanging-indent">
-<div id="ref-adamson2010star" class="csl-entry">
-Adamson, Christopher. 2010. <em>Star Schema: The Complete
-Reference</em>. McGraw Hill Professional.
-</div>
-<div id="ref-jensen2010multi" class="csl-entry">
-Jensen, Christian S., Torben Bach Pedersen, and Christian Thomsen. 2010.
-<em>Multidimensional Databases and Data Warehousing</em>. Morgan &amp;
-Claypool Publishers.
-</div>
-<div id="ref-kimball2013data" class="csl-entry">
-Kimball, Ralph, and Margy Ross. 2013. <em>The Data Warehouse Toolkit:
-The Definitive Guide to Dimensional Modeling</em>. John Wiley &amp;
-Sons.
-</div>
-</div>
+<p>The <code>rolap</code> package supports the definition of
+role-playing and role dimensions in star databases. In this way, the
+result can be exported to a RDBMS where we can define the dimensions as
+independent tables or as views of a single physical table, as we need or
+prefer.</p>
+<p>The definition of role-playing and role dimensions is propagated from
+star databases to constellations, allowing to integrate various
+definitions into a common one.</p>
 </div>
 
 
