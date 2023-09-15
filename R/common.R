@@ -1,64 +1,144 @@
-
-# as_tibble_list_common ----------------------------------------------------
-
-#' Generate a list of tibbles with fact and dimension tables
+#' get default unknown value
 #'
-#' @param dimensions A list of dimension tables.
-#' @param facts A list of fact tables.
+#' @return A string.
 #'
-#' @return A list of `tibble` objects.
 #' @keywords internal
-as_tibble_list_common <- function(dimensions, facts) {
-  l <- NULL
-  lnames <- NULL
-  for (d in names(dimensions)) {
-    l <- c(l, list(dimensions[[d]]$table))
-    lnames <- c(lnames, d)
-  }
-  for (f in names(facts)) {
-    l <- c(l, list(facts[[f]]$table))
-    lnames <- c(lnames, f)
-  }
-  names(l) <- lnames
-  l
+get_default_unknown_value <- function() {
+  "___UNKNOWN___"
+}
+
+#' check if a string is empty
+#'
+#' @param string A string.
+#'
+#' @return A boolean.
+#'
+#' @keywords internal
+is_empty_string <- function(string) {
+  res <- (is.null(string) | identical(string, character(0)))
+  res
 }
 
 
-# as_dm_class_common ----------------------------------------------------
-
-#' Generate a list of tibbles with fact and dimension tables
+#' Validate attribute names
 #'
-#' @param dimensions A list of dimension tables.
-#' @param facts A list of fact tables.
+#' @param defined_attributes A vector of strings, defined attribute names.
+#' @param attributes A vector of strings, new attribute names.
+#' @param repeated A boolean, repeated attributes allowed.
 #'
-#' @return  A `dm` object.
-#' @param pk_facts A boolean, include primary key in fact tables.
-#'
-#' @importFrom rlang :=
+#' @return A vector of strings, attribute names.
 #'
 #' @keywords internal
-as_dm_class_common <- function(dimensions, facts, pk_facts) {
-  c <- dm::dm()
-  for (d in names(dimensions)) {
-    c <- c |>
-      dm::dm(!!d := dimensions[[d]]$table) |>
-      dm::dm_add_pk(!!d, !!dimensions[[d]]$surrogate_key) |>
-      dm::dm_set_colors(darkgreen = !!d)
-  }
-  for (f in names(facts)) {
-    c <- c |>
-      dm::dm(!!f := facts[[f]]$table) |>
-      dm::dm_set_colors(darkblue = !!f)
-    for (s in facts[[f]]$surrogate_keys) {
-      t <- gsub("_key", "", s)
-      c <- c |>
-        dm::dm_add_fk(!!f, !!s, !!t)
+validate_attributes <- function(defined_attributes, attributes, repeated = FALSE) {
+  if (is.null(attributes)) {
+    attributes <- defined_attributes
+  } else {
+    if (!repeated) {
+      stopifnot("There are repeated attributes." = length(attributes) == length(unique(attributes)))
     }
-    if (pk_facts) {
-      c <- c |>
-        dm::dm_add_pk(!!f, !!facts[[f]]$surrogate_keys)
+    for (attribute in attributes) {
+      if (!(attribute %in% defined_attributes)) {
+        stop(sprintf(
+          "'%s' is not defined as attribute.",
+          attribute
+        ))
+      }
     }
   }
-  c
+  attributes
+}
+
+#' Validate measure names
+#'
+#' @param defined_measures A vector of strings, defined measure names.
+#' @param measures A vector of strings, measure names.
+#'
+#' @return A vector of strings, measure names.
+#'
+#' @keywords internal
+validate_measures <- function(defined_measures, measures) {
+  if (is.null(measures)) {
+    measures <- defined_measures
+  } else {
+    stopifnot("There are repeated measures." = length(measures) == length(unique(measures)))
+    for (measure in measures) {
+      if (!(measure %in% defined_measures)) {
+        stop(sprintf(
+          "'%s' is not defined as measure.",
+          measure
+        ))
+      }
+    }
+  }
+  measures
+}
+
+
+#' Replace names
+#'
+#' @param original A string, original names.
+#' @param old A vector of names to replace.
+#' @param new A vector of names, new names.
+#'
+#' @return A vector of strings, names replaced.
+#'
+#' @keywords internal
+replace_names <- function(original, old, new) {
+  names <- original
+  for (i in seq_along(old)) {
+    j <- which(original == old[i])
+    names[j] <- new[i]
+  }
+  names
+}
+
+
+#' For each row, add a vector of values
+#'
+#' @param names A vector of strings, names of attributes or measures.
+#' @param ordered A boolean, sort names alphabetically.
+#' @param as_definition A boolean, as the definition of the vector in R.
+#'
+#' @return A vector of strings, attribute or measure names.
+#'
+#' @keywords internal
+transform_names <- function(names, ordered, as_definition) {
+  if (ordered) {
+    names <- sort(names)
+  }
+  if (as_definition & length(names) > 0) {
+    v <- tibble::as_tibble(data.frame(matrix(names, ncol = length(names), nrow = 1)))
+    v <- add_dput_column(v, column = 'vector')
+    names <- v$vector
+  }
+  names
+}
+
+
+#' For each row, add a vector of values
+#'
+#' @param v A `tibble`, rows of a dimension table.
+#' @param column A string, name of the column to include a vector of values.
+#'
+#' @return A `tibble`, rows of a dimension table.
+#'
+#' @keywords internal
+add_dput_column <- function(v, column) {
+  n_att <- ncol(v)
+  v[column] <- ""
+  for (i in 1:nrow(v)) {
+    dt <- "c("
+    for (j in 1:n_att) {
+      if (j == 1) {
+        sep = ""
+      } else {
+        sep = ", "
+      }
+      dt <- paste(dt, sprintf("'%s'", v[i, j]), sep = sep)
+    }
+    dt <- paste(dt, ")", sep = "")
+    v[i, column] <- dt
+  }
+  v
 }
 

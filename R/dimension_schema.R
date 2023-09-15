@@ -28,8 +28,12 @@
 #' @export
 dimension_schema <- function(name = NULL, attributes = NULL) {
   stopifnot("Missing dimension name." = !is.null(name))
-  stopifnot("Missing dimension attributes" = length(attributes) > 0)
-  stopifnot("There are repeated attributes in the dimension." = length(attributes) == length(unique(attributes)))
+  if (!(length(attributes) > 0)) {
+    stop(sprintf("Missing the dimension '%s' attributes.", name))
+  }
+  if (!(length(attributes) == length(unique(attributes)))) {
+    stop(sprintf("There are repeated attributes in the '%s' dimension.", name))
+  }
   structure(list(name = name, attributes = attributes), class = "dimension_schema")
 }
 
@@ -53,13 +57,13 @@ get_dimension_name.dimension_schema <- function(schema) {
 
 #' Get attribute names
 #'
-#' Get the names of the attributes defined in the dimension schema.
+#' Get the attribute names.
 #'
 #' @param schema A `dimension_schema` object.
 #'
-#' @return A vector of strings.
+#' @return A string.
 #'
 #' @keywords internal
-get_attribute_names.dimension_schema <- function(schema) {
+get_attribute_names_schema.dimension_schema <- function(schema) {
   schema$attributes
-}
+  }

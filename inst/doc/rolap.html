@@ -1593,16 +1593,16 @@ end users have emerged, which are also aimed at performing
 transformation operations. All these tools are very useful to carry out
 the transformation process, they provide a development environment to
 define the transformation operations in a general way.</p>
-<p>Frequently, the operations to be performed aim to transform a flat
-table (with data that comes from operational systems) into a ROLAP
+<p>Frequently, the operations to be performed aim to transform tables
+(with data that comes from operational systems) into a ROLAP
 (<em>Relational On-Line Analytical Processing</em>) star database, made
 up of fact and dimension tables, which implements a multidimensional
 system. With the tools mentioned above, this transformation can be
 carried out, but it requires a lot of work.</p>
 <p>The goal of <code>rolap</code> is to define transformations that
 allow you to easily obtain ROLAP star databases, composed by fact and
-dimension tables, from flat tables and to be able to export them in
-various formats to be used by OLAP query tools.</p>
+dimension tables, from operational tables and to be able to export them
+in various formats to be used by OLAP query tools.</p>
 <p>The rest of this document is structured as follows: First, basic
 concepts of dimensional modelling and star databases are summarized. The
 following is an illustrative example of how the package works, to show
@@ -2356,15 +2356,15 @@ removing redundant descriptions. Below are the first 15 rows of
 </tr>
 </tbody>
 </table>
-<p><code>ft_num</code> and <code>ft_age</code> are the flat tables that
-will be considered as a starting point to obtain star databases from
-them in this example.</p>
+<p><code>ft_num</code> and <code>ft_age</code> are the tables that will
+be considered as a starting point to obtain star databases from them in
+this example.</p>
 </div>
 <div id="dimensional-modelling-1" class="section level2">
 <h2>Dimensional modelling</h2>
-<p>For each flat table, the goal is to define the attributes that
-correspond to measures in facts and those that are in dimensions. For
-facts, measures and their aggregation functions have to be defined. For
+<p>For each table, the goal is to define the attributes that correspond
+to measures in facts and those that are in dimensions. For facts,
+measures and their aggregation functions have to be defined. For
 dimensions, attributes with natural affinity must be grouped. Each
 attribute should only appear once in the definition.</p>
 <p>To avoid having to write the name of the attributes of the table,
@@ -2437,7 +2437,7 @@ stored. With that value and the result of <em>SUM</em>, the value of the
 <em>AVG</em> function can be obtained.</p>
 <p>The aggregation functions are needed to get the data at the
 granularity defined in the star schema, which can be equal to or coarser
-than the granularity defined in the flat table.</p>
+than the granularity defined in the table.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>s_cause <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="fu">define_facts</span>(<span class="at">name =</span> <span class="st">&quot;MRS Cause&quot;</span>,</span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>               <span class="at">measures =</span> <span class="fu">c</span>(<span class="st">&quot;Pneumonia and Influenza Deaths&quot;</span>,</span>
@@ -2451,7 +2451,7 @@ corresponding to the number of records added has been changed.</p>
 </div>
 <div id="star-databases-1" class="section level3">
 <h3>Star databases</h3>
-<p>From a <code>star_schema</code> object and a flat table
+<p>From a <code>star_schema</code> object and a table
 (<code>tibble</code>) that contains all the fields that appear in it,
 using the <code>star_database()</code> function, we obtain a
 <code>star_database</code> object. As an example we will consider data
@@ -2801,8 +2801,8 @@ shown below.</p>
 </tbody>
 </table>
 <p>It can be seen that the data in the fact table has the same
-granularity as the data in the original flat table (they have the same
-number of records).</p>
+granularity as the data in the original table (they have the same number
+of records).</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">nrow</span>(ft_num)</span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt; [1] 20</span></span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
@@ -2831,8 +2831,8 @@ names, and <code>set_dimension_attribute_names()</code> and
 <h4>Definition of star databases</h4>
 <p>To more effectively demonstrate the functionality, we are going to
 define the star databases with a coarser granularity than the original
-flat tables; additionally we are going to select only some of the rows
-from the flat tables.</p>
+tables; additionally we are going to select only some of the rows from
+the tables.</p>
 <p>For the cause case is shown below.</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>when <span class="ot">&lt;-</span> <span class="fu">dimension_schema</span>(<span class="at">name =</span> <span class="st">&quot;When&quot;</span>,</span>
 <span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>                         <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;Year&quot;</span>))</span>
@@ -3465,6 +3465,22 @@ common to both databases.</p>
 </table>
 <p>These tables can be directly exported in the format required by the
 OLAP query tool that we are going to use.</p>
+<p>Constellations can be defined from star databases and also from other
+constellations. For example, let’s define a new star database based on
+the previous examples.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>s_age2 <span class="ot">&lt;-</span> <span class="fu">star_schema</span>() <span class="sc">|&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  <span class="fu">define_facts</span>(<span class="at">name =</span> <span class="st">&quot;MRS Age 2&quot;</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>               <span class="at">measures =</span> <span class="fu">c</span>(<span class="st">&quot;All Deaths&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>  <span class="fu">define_dimension</span>(when) <span class="sc">|&gt;</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>  <span class="fu">define_dimension</span>(where) <span class="sc">|&gt;</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>  <span class="fu">define_dimension</span>(<span class="at">name =</span> <span class="st">&quot;Who&quot;</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>                         <span class="at">attributes =</span> <span class="fu">c</span>(<span class="st">&quot;Age&quot;</span>))</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>db_age2 <span class="ot">&lt;-</span> <span class="fu">star_database</span>(s_age2, ft_age) <span class="sc">|&gt;</span></span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>  <span class="fu">snake_case</span>()</span></code></pre></div>
+<p>Next we define a constellation, it is made up of the previously
+defined constellation and the new star database.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>ct2 <span class="ot">&lt;-</span> <span class="fu">constellation</span>(<span class="st">&quot;MRS2&quot;</span>, <span class="fu">list</span>(ct, db_age2))</span></code></pre></div>
 </div>
 </div>
 </div>
@@ -3475,155 +3491,206 @@ multidimensional database (star database or constellation) it can be
 exported as a <code>tibble</code> list, suitable for example to pass the
 data to a spreadsheet, or as an object of the class <code>dm</code>,
 which allows passing the data to a RDBMS.</p>
-<p>Generic functions are used, applicable to objects of both classes,
-<code>star_database</code> and <code>constellation</code>.</p>
+<p>In some cases, we may be interested in having the data in the form of
+a table again, especially if we want to carry out some statistical
+analysis with the integrated data. We can export them as a single
+<code>tibble</code> list.</p>
+<p>Functions are defined, applicable to objects of both star databases
+and constellations.</p>
 <div id="tibble-list" class="section level3">
 <h3><code>tibble</code> list</h3>
-<p>The following shows the results that are obtained for a
-<code>star_database</code> object.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>db_cause <span class="sc">|&gt;</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co">#&gt; $when</span></span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#&gt;   when_key year </span></span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;</span></span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co">#&gt; 1        1 1963 </span></span>
-<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co">#&gt; 2        2 1964 </span></span>
-<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="co">#&gt; $where</span></span>
-<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
-<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="co">#&gt;   where_key state city      </span></span>
-<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="co">#&gt;       &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     </span></span>
-<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="co">#&gt; 1         1 CT    Bridgeport</span></span>
-<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="co">#&gt; 2         2 MA    Boston    </span></span>
-<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a><span class="co">#&gt; $mrs_cause</span></span>
-<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 5</span></span>
-<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a><span class="co">#&gt;   when_key where_key pneumonia_and_influenza_deaths all_deaths nrow_agg</span></span>
-<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt;     &lt;int&gt;                          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
-<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a><span class="co">#&gt; 1        1         1                              2         46        1</span></span>
-<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a><span class="co">#&gt; 2        1         2                             10        276        1</span></span>
-<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a><span class="co">#&gt; 3        2         1                              8         45        1</span></span>
-<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a><span class="co">#&gt; 4        2         2                             22        569        2</span></span></code></pre></div>
-<p>Also for a <code>constellation</code> object.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>ct <span class="sc">|&gt;</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co">#&gt; $when</span></span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3 × 2</span></span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co">#&gt;   when_key year </span></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;</span></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co">#&gt; 1        1 1962 </span></span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="co">#&gt; 2        2 1963 </span></span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="co">#&gt; 3        3 1964 </span></span>
-<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="co">#&gt; $where</span></span>
-<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 3</span></span>
-<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="co">#&gt;   where_key state city      </span></span>
-<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="co">#&gt;       &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     </span></span>
-<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="co">#&gt; 1         1 CT    Bridgeport</span></span>
-<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; 2         2 CT    Hartford  </span></span>
-<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="co">#&gt; 3         3 MA    Boston    </span></span>
-<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="co">#&gt; 4         4 MA    Cambridge </span></span>
-<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="co">#&gt; $who</span></span>
-<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="co">#&gt; # A tibble: 5 × 2</span></span>
-<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="co">#&gt;   who_key age        </span></span>
-<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt; &lt;chr&gt;      </span></span>
-<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="co">#&gt; 1       1 1-24 years </span></span>
-<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a><span class="co">#&gt; 2       2 25-44 years</span></span>
-<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a><span class="co">#&gt; 3       3 45-64 years</span></span>
-<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="co">#&gt; 4       4 65+ years  </span></span>
-<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="co">#&gt; 5       5 &lt;1 year    </span></span>
-<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="co">#&gt; $mrs_cause</span></span>
-<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 5</span></span>
-<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="co">#&gt;   when_key where_key pneumonia_and_influenza_deaths all_deaths nrow_agg</span></span>
-<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt;     &lt;int&gt;                          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
-<span id="cb16-34"><a href="#cb16-34" tabindex="-1"></a><span class="co">#&gt; 1        2         1                              2         46        1</span></span>
-<span id="cb16-35"><a href="#cb16-35" tabindex="-1"></a><span class="co">#&gt; 2        2         3                             10        276        1</span></span>
-<span id="cb16-36"><a href="#cb16-36" tabindex="-1"></a><span class="co">#&gt; 3        3         1                              8         45        1</span></span>
-<span id="cb16-37"><a href="#cb16-37" tabindex="-1"></a><span class="co">#&gt; 4        3         3                             22        569        2</span></span>
-<span id="cb16-38"><a href="#cb16-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb16-39"><a href="#cb16-39" tabindex="-1"></a><span class="co">#&gt; $mrs_age</span></span>
-<span id="cb16-40"><a href="#cb16-40" tabindex="-1"></a><span class="co">#&gt; # A tibble: 15 × 5</span></span>
-<span id="cb16-41"><a href="#cb16-41" tabindex="-1"></a><span class="co">#&gt;    when_key where_key who_key all_deaths nrow_agg</span></span>
-<span id="cb16-42"><a href="#cb16-42" tabindex="-1"></a><span class="co">#&gt;       &lt;int&gt;     &lt;int&gt;   &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
-<span id="cb16-43"><a href="#cb16-43" tabindex="-1"></a><span class="co">#&gt;  1        1         2       1          2        2</span></span>
-<span id="cb16-44"><a href="#cb16-44" tabindex="-1"></a><span class="co">#&gt;  2        1         2       2          3        2</span></span>
-<span id="cb16-45"><a href="#cb16-45" tabindex="-1"></a><span class="co">#&gt;  3        1         2       3         35        2</span></span>
-<span id="cb16-46"><a href="#cb16-46" tabindex="-1"></a><span class="co">#&gt;  4        1         2       4         54        2</span></span>
-<span id="cb16-47"><a href="#cb16-47" tabindex="-1"></a><span class="co">#&gt;  5        1         2       5         10        2</span></span>
-<span id="cb16-48"><a href="#cb16-48" tabindex="-1"></a><span class="co">#&gt;  6        1         4       1          0        1</span></span>
-<span id="cb16-49"><a href="#cb16-49" tabindex="-1"></a><span class="co">#&gt;  7        1         4       2          2        1</span></span>
-<span id="cb16-50"><a href="#cb16-50" tabindex="-1"></a><span class="co">#&gt;  8        1         4       3          7        1</span></span>
-<span id="cb16-51"><a href="#cb16-51" tabindex="-1"></a><span class="co">#&gt;  9        1         4       4         29        1</span></span>
-<span id="cb16-52"><a href="#cb16-52" tabindex="-1"></a><span class="co">#&gt; 10        1         4       5          1        1</span></span>
-<span id="cb16-53"><a href="#cb16-53" tabindex="-1"></a><span class="co">#&gt; 11        2         2       1          5        3</span></span>
-<span id="cb16-54"><a href="#cb16-54" tabindex="-1"></a><span class="co">#&gt; 12        2         2       2         13        3</span></span>
-<span id="cb16-55"><a href="#cb16-55" tabindex="-1"></a><span class="co">#&gt; 13        2         2       3         51        3</span></span>
-<span id="cb16-56"><a href="#cb16-56" tabindex="-1"></a><span class="co">#&gt; 14        2         2       4        107        3</span></span>
-<span id="cb16-57"><a href="#cb16-57" tabindex="-1"></a><span class="co">#&gt; 15        2         2       5         16        3</span></span></code></pre></div>
+<p>The following shows the results that are obtained for a star
+database.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>db_cause <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="co">#&gt; $when</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="co">#&gt;   when_key year </span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt; 1        1 1963 </span></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="co">#&gt; 2        2 1964 </span></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="co">#&gt; $where</span></span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co">#&gt;   where_key state city      </span></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co">#&gt;       &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     </span></span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="co">#&gt; 1         1 CT    Bridgeport</span></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="co">#&gt; 2         2 MA    Boston    </span></span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="co">#&gt; $mrs_cause</span></span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 5</span></span>
+<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="co">#&gt;   when_key where_key pneumonia_and_influenza_deaths all_deaths nrow_agg</span></span>
+<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt;     &lt;int&gt;                          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="co">#&gt; 1        1         1                              2         46        1</span></span>
+<span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a><span class="co">#&gt; 2        1         2                             10        276        1</span></span>
+<span id="cb17-23"><a href="#cb17-23" tabindex="-1"></a><span class="co">#&gt; 3        2         1                              8         45        1</span></span>
+<span id="cb17-24"><a href="#cb17-24" tabindex="-1"></a><span class="co">#&gt; 4        2         2                             22        569        2</span></span></code></pre></div>
+<p>Also for a constellation.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>ct <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>  <span class="fu">as_tibble_list</span>()</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="co">#&gt; $when</span></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3 × 2</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="co">#&gt;   when_key year </span></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt; &lt;chr&gt;</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">#&gt; 1        1 1962 </span></span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="co">#&gt; 2        2 1963 </span></span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="co">#&gt; 3        3 1964 </span></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="co">#&gt; $where</span></span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 3</span></span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="co">#&gt;   where_key state city      </span></span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a><span class="co">#&gt;       &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     </span></span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a><span class="co">#&gt; 1         1 CT    Bridgeport</span></span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a><span class="co">#&gt; 2         2 CT    Hartford  </span></span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a><span class="co">#&gt; 3         3 MA    Boston    </span></span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a><span class="co">#&gt; 4         4 MA    Cambridge </span></span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a><span class="co">#&gt; $who</span></span>
+<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a><span class="co">#&gt; # A tibble: 5 × 2</span></span>
+<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a><span class="co">#&gt;   who_key age        </span></span>
+<span id="cb18-23"><a href="#cb18-23" tabindex="-1"></a><span class="co">#&gt;     &lt;int&gt; &lt;chr&gt;      </span></span>
+<span id="cb18-24"><a href="#cb18-24" tabindex="-1"></a><span class="co">#&gt; 1       1 1-24 years </span></span>
+<span id="cb18-25"><a href="#cb18-25" tabindex="-1"></a><span class="co">#&gt; 2       2 25-44 years</span></span>
+<span id="cb18-26"><a href="#cb18-26" tabindex="-1"></a><span class="co">#&gt; 3       3 45-64 years</span></span>
+<span id="cb18-27"><a href="#cb18-27" tabindex="-1"></a><span class="co">#&gt; 4       4 65+ years  </span></span>
+<span id="cb18-28"><a href="#cb18-28" tabindex="-1"></a><span class="co">#&gt; 5       5 &lt;1 year    </span></span>
+<span id="cb18-29"><a href="#cb18-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb18-30"><a href="#cb18-30" tabindex="-1"></a><span class="co">#&gt; $mrs_cause</span></span>
+<span id="cb18-31"><a href="#cb18-31" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 5</span></span>
+<span id="cb18-32"><a href="#cb18-32" tabindex="-1"></a><span class="co">#&gt;   when_key where_key pneumonia_and_influenza_deaths all_deaths nrow_agg</span></span>
+<span id="cb18-33"><a href="#cb18-33" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt;     &lt;int&gt;                          &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
+<span id="cb18-34"><a href="#cb18-34" tabindex="-1"></a><span class="co">#&gt; 1        2         1                              2         46        1</span></span>
+<span id="cb18-35"><a href="#cb18-35" tabindex="-1"></a><span class="co">#&gt; 2        2         3                             10        276        1</span></span>
+<span id="cb18-36"><a href="#cb18-36" tabindex="-1"></a><span class="co">#&gt; 3        3         1                              8         45        1</span></span>
+<span id="cb18-37"><a href="#cb18-37" tabindex="-1"></a><span class="co">#&gt; 4        3         3                             22        569        2</span></span>
+<span id="cb18-38"><a href="#cb18-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb18-39"><a href="#cb18-39" tabindex="-1"></a><span class="co">#&gt; $mrs_age</span></span>
+<span id="cb18-40"><a href="#cb18-40" tabindex="-1"></a><span class="co">#&gt; # A tibble: 15 × 5</span></span>
+<span id="cb18-41"><a href="#cb18-41" tabindex="-1"></a><span class="co">#&gt;    when_key where_key who_key all_deaths nrow_agg</span></span>
+<span id="cb18-42"><a href="#cb18-42" tabindex="-1"></a><span class="co">#&gt;       &lt;int&gt;     &lt;int&gt;   &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
+<span id="cb18-43"><a href="#cb18-43" tabindex="-1"></a><span class="co">#&gt;  1        1         2       1          2        2</span></span>
+<span id="cb18-44"><a href="#cb18-44" tabindex="-1"></a><span class="co">#&gt;  2        1         2       2          3        2</span></span>
+<span id="cb18-45"><a href="#cb18-45" tabindex="-1"></a><span class="co">#&gt;  3        1         2       3         35        2</span></span>
+<span id="cb18-46"><a href="#cb18-46" tabindex="-1"></a><span class="co">#&gt;  4        1         2       4         54        2</span></span>
+<span id="cb18-47"><a href="#cb18-47" tabindex="-1"></a><span class="co">#&gt;  5        1         2       5         10        2</span></span>
+<span id="cb18-48"><a href="#cb18-48" tabindex="-1"></a><span class="co">#&gt;  6        1         4       1          0        1</span></span>
+<span id="cb18-49"><a href="#cb18-49" tabindex="-1"></a><span class="co">#&gt;  7        1         4       2          2        1</span></span>
+<span id="cb18-50"><a href="#cb18-50" tabindex="-1"></a><span class="co">#&gt;  8        1         4       3          7        1</span></span>
+<span id="cb18-51"><a href="#cb18-51" tabindex="-1"></a><span class="co">#&gt;  9        1         4       4         29        1</span></span>
+<span id="cb18-52"><a href="#cb18-52" tabindex="-1"></a><span class="co">#&gt; 10        1         4       5          1        1</span></span>
+<span id="cb18-53"><a href="#cb18-53" tabindex="-1"></a><span class="co">#&gt; 11        2         2       1          5        3</span></span>
+<span id="cb18-54"><a href="#cb18-54" tabindex="-1"></a><span class="co">#&gt; 12        2         2       2         13        3</span></span>
+<span id="cb18-55"><a href="#cb18-55" tabindex="-1"></a><span class="co">#&gt; 13        2         2       3         51        3</span></span>
+<span id="cb18-56"><a href="#cb18-56" tabindex="-1"></a><span class="co">#&gt; 14        2         2       4        107        3</span></span>
+<span id="cb18-57"><a href="#cb18-57" tabindex="-1"></a><span class="co">#&gt; 15        2         2       5         16        3</span></span></code></pre></div>
 </div>
-<div id="md-object" class="section level3">
-<h3><code>md</code> object</h3>
-<p>The <a href="https://cran.r-project.org/package=dm">dm</a> package
+<div id="dm-object" class="section level3">
+<h3><code>dm</code> object</h3>
+<p>The <a href="https://cran.r-project.org/package=dm"><code>dm</code></a> package
 allows you to link tables implemented using the <code>tibble</code>
 class in R with tables in RDBMS.</p>
-<p>The following example shows the transformation of a
-<code>star_database</code> object to an object of class
-<code>dm</code>.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># star database</span></span>
-<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>db_cause_dm <span class="ot">&lt;-</span> db_cause <span class="sc">|&gt;</span></span>
-<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>  <span class="fu">as_dm_class</span>()</span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="fu">class</span>(db_cause_dm)</span>
-<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;dm&quot;</span></span>
-<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>db_cause_dm</span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt; ── Metadata ────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="co">#&gt; Tables: `when`, `where`, `mrs_cause`</span></span>
-<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co">#&gt; Columns: 10</span></span>
-<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="co">#&gt; Primary keys: 3</span></span>
-<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="co">#&gt; Foreign keys: 2</span></span></code></pre></div>
-<p>Also for a <code>constellation</code> object.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># constellation</span></span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>ct_dm <span class="ot">&lt;-</span> ct <span class="sc">|&gt;</span></span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>  <span class="fu">as_dm_class</span>(<span class="at">pk_facts =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="fu">class</span>(ct_dm)</span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;dm&quot;</span></span>
-<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>ct_dm</span>
-<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">#&gt; ── Metadata ────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="co">#&gt; Tables: `when`, `where`, `who`, `mrs_cause`, `mrs_age`</span></span>
-<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="co">#&gt; Columns: 17</span></span>
-<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="co">#&gt; Primary keys: 5</span></span>
-<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="co">#&gt; Foreign keys: 5</span></span></code></pre></div>
+<p>The following example shows the transformation of a star database to
+an object of class <code>dm</code>.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co"># star database</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>db_cause_dm <span class="ot">&lt;-</span> db_cause <span class="sc">|&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>  <span class="fu">as_dm_class</span>()</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="fu">class</span>(db_cause_dm)</span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;dm&quot;</span></span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>db_cause_dm</span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a><span class="co">#&gt; ── Metadata ────────────────────────────────────────────────────────────────────</span></span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a><span class="co">#&gt; Tables: `when`, `where`, `mrs_cause`</span></span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a><span class="co">#&gt; Columns: 10</span></span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a><span class="co">#&gt; Primary keys: 3</span></span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a><span class="co">#&gt; Foreign keys: 2</span></span></code></pre></div>
+<p>Also for a constellation.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># constellation</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>ct_dm <span class="ot">&lt;-</span> ct <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>  <span class="fu">as_dm_class</span>(<span class="at">pk_facts =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="fu">class</span>(ct_dm)</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;dm&quot;</span></span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>ct_dm</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="co">#&gt; ── Metadata ────────────────────────────────────────────────────────────────────</span></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co">#&gt; Tables: `when`, `where`, `who`, `mrs_cause`, `mrs_age`</span></span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="co">#&gt; Columns: 17</span></span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="co">#&gt; Primary keys: 5</span></span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co">#&gt; Foreign keys: 5</span></span></code></pre></div>
 <p>For example, the <code>dm</code> class object can be used to
-represent the <code>constellation</code> tables, as it’s shown in the
-following (it can also be used to store them in a DBMS).</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>ct_dm <span class="sc">|&gt;</span> </span>
-<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>  dm<span class="sc">::</span><span class="fu">dm_draw</span>(<span class="at">rankdir =</span> <span class="st">&quot;LR&quot;</span>, <span class="at">view_type =</span> <span class="st">&quot;all&quot;</span>)</span></code></pre></div>
-<div class="grViz html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-726c949daa6fad8d7698" style="width:288px;height:288px;"></div>
-<script type="application/json" data-for="htmlwidget-726c949daa6fad8d7698">{"x":{"diagram":"#data_model\ndigraph {\ngraph [rankdir=LR tooltip=\"Data Model\" ]\n\nnode [margin=0 fontcolor = \"#444444\" ]\n\nedge [color = \"#555555\", arrowsize = 1, ]\n\npack=true\npackmode= \"node\"\n\n  \"mrs_age\" [id = \"mrs_age\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_age<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"who_key\">who_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">all_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key, where_key, who_key\"><U>when_key, where_key, who_key<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"mrs_cause\" [id = \"mrs_cause\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_cause<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">pneumonia_and_influenza_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">all_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key, where_key\"><U>when_key, where_key<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when\" [id = \"when\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_key\"><U>when_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"where\" [id = \"where\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">where<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"where_key\"><U>where_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">state<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">city<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"who\" [id = \"who\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">who<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"who_key\"><U>who_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">age<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n\"mrs_cause\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_cause_1\"]\n\"mrs_age\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_age_1\"]\n\"mrs_cause\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_cause_2\"]\n\"mrs_age\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_age_2\"]\n\"mrs_age\":\"who_key\"->\"who\":\"who_key\" [id=\"mrs_age_3\"]\n}","config":{"engine":null,"options":null}},"evals":[],"jsHooks":[]}</script>
+represent the constellation tables, as it’s shown in the following (it
+can also be used to store them in a DBMS).</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>ct_dm <span class="sc">|&gt;</span> </span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>  dm<span class="sc">::</span><span class="fu">dm_draw</span>(<span class="at">rankdir =</span> <span class="st">&quot;LR&quot;</span>, <span class="at">view_type =</span> <span class="st">&quot;all&quot;</span>)</span></code></pre></div>
+<div class="grViz html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d205750688c49f44be0f" style="width:288px;height:288px;"></div>
+<script type="application/json" data-for="htmlwidget-d205750688c49f44be0f">{"x":{"diagram":"#data_model\ndigraph {\ngraph [rankdir=LR tooltip=\"Data Model\" ]\n\nnode [margin=0 fontcolor = \"#444444\" ]\n\nedge [color = \"#555555\", arrowsize = 1, ]\n\npack=true\npackmode= \"node\"\n\n  \"mrs_age\" [id = \"mrs_age\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_age<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"who_key\">who_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">all_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key, where_key, who_key\"><U>when_key, where_key, who_key<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"mrs_cause\" [id = \"mrs_cause\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#00005CAA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#00008BFF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">mrs_cause<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key\">when_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"where_key\">where_key<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">pneumonia_and_influenza_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">all_deaths<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\">nrow_agg<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCCCE7FF\" PORT=\"when_key, where_key\"><U>when_key, where_key<\/U><\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"when\" [id = \"when\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">when<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"when_key\"><U>when_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">year<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"where\" [id = \"where\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">where<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"where_key\"><U>where_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">state<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">city<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n  \"who\" [id = \"who\", label = <<TABLE ALIGN=\"LEFT\" BORDER=\"1\" CELLBORDER=\"0\" CELLSPACING=\"0\" COLOR=\"#004200AA\">\n    <TR>\n      <TD COLSPAN=\"1\" BGCOLOR=\"#006400FF\" BORDER=\"0\"><FONT COLOR=\"#FFFFFF\">who<\/FONT>\n<\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\" PORT=\"who_key\"><U>who_key<\/U><\/TD>\n    <\/TR>\n    <TR>\n      <TD ALIGN=\"LEFT\" BGCOLOR=\"#CCE0CCFF\">age<\/TD>\n    <\/TR>\n  <\/TABLE>>, shape = \"plaintext\"] \n\n\"mrs_cause\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_cause_1\"]\n\"mrs_age\":\"when_key\"->\"when\":\"when_key\" [id=\"mrs_age_1\"]\n\"mrs_cause\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_cause_2\"]\n\"mrs_age\":\"where_key\"->\"where\":\"where_key\" [id=\"mrs_age_2\"]\n\"mrs_age\":\"who_key\"->\"who\":\"who_key\" [id=\"mrs_age_3\"]\n}","config":{"engine":null,"options":null}},"evals":[],"jsHooks":[]}</script>
 <p>In the example below, a local <em>SQLite</em> database is used to
 demonstrate how to store the model in a database. <code>dm</code> works
 with any RDBMS supported by <code>DBI</code>.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>db <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbConnect</span>(RSQLite<span class="sc">::</span><span class="fu">SQLite</span>())</span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>ct_dm_db <span class="ot">&lt;-</span> dm<span class="sc">::</span><span class="fu">copy_dm_to</span>(db, ct_dm)</span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>ct_dm_db</span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt; ── Table source ────────────────────────────────────────────────────────────────</span></span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; src:  sqlite 3.41.2 []</span></span>
-<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a><span class="co">#&gt; ── Metadata ────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="co">#&gt; Tables: `when`, `where`, `who`, `mrs_cause`, `mrs_age`</span></span>
-<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co">#&gt; Columns: 17</span></span>
-<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="co">#&gt; Primary keys: 5</span></span>
-<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="co">#&gt; Foreign keys: 5</span></span>
-<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a>DBI<span class="sc">::</span><span class="fu">dbDisconnect</span>(db)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>db <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbConnect</span>(RSQLite<span class="sc">::</span><span class="fu">SQLite</span>())</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>ct_dm_db <span class="ot">&lt;-</span> dm<span class="sc">::</span><span class="fu">copy_dm_to</span>(db, ct_dm)</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>ct_dm_db</span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="co">#&gt; ── Table source ────────────────────────────────────────────────────────────────</span></span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="co">#&gt; src:  sqlite 3.41.2 []</span></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a><span class="co">#&gt; ── Metadata ────────────────────────────────────────────────────────────────────</span></span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a><span class="co">#&gt; Tables: `when`, `where`, `who`, `mrs_cause`, `mrs_age`</span></span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a><span class="co">#&gt; Columns: 17</span></span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a><span class="co">#&gt; Primary keys: 5</span></span>
+<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a><span class="co">#&gt; Foreign keys: 5</span></span>
+<span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a>DBI<span class="sc">::</span><span class="fu">dbDisconnect</span>(db)</span></code></pre></div>
+</div>
+<div id="single-tibble-list" class="section level3">
+<h3>Single <code>tibble</code> list</h3>
+<p>The following shows the results that are obtained for a star database
+seen as a single <code>tibble</code> list. Each single
+<code>tibble</code> is the result of performing an <em>inner join</em>
+between the fact table and the dimension tables.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>db_cause <span class="sc">|&gt;</span></span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>  <span class="fu">as_single_tibble_list</span>()</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a><span class="co">#&gt; $mrs_cause</span></span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 6</span></span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a><span class="co">#&gt;   year  state city       pneumonia_and_influenza_deaths all_deaths nrow_agg</span></span>
+<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                               &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
+<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a><span class="co">#&gt; 1 1963  CT    Bridgeport                              2         46        1</span></span>
+<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a><span class="co">#&gt; 2 1963  MA    Boston                                 10        276        1</span></span>
+<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a><span class="co">#&gt; 3 1964  CT    Bridgeport                              8         45        1</span></span>
+<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a><span class="co">#&gt; 4 1964  MA    Boston                                 22        569        2</span></span></code></pre></div>
+<p>Also for a constellation.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>ct <span class="sc">|&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>  <span class="fu">as_single_tibble_list</span>()</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a><span class="co">#&gt; $mrs_cause</span></span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 6</span></span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a><span class="co">#&gt;   year  state city       pneumonia_and_influenza_deaths all_deaths nrow_agg</span></span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                               &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a><span class="co">#&gt; 1 1963  CT    Bridgeport                              2         46        1</span></span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a><span class="co">#&gt; 2 1963  MA    Boston                                 10        276        1</span></span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a><span class="co">#&gt; 3 1964  CT    Bridgeport                              8         45        1</span></span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a><span class="co">#&gt; 4 1964  MA    Boston                                 22        569        2</span></span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a><span class="co">#&gt; $mrs_age</span></span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a><span class="co">#&gt; # A tibble: 15 × 6</span></span>
+<span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a><span class="co">#&gt;    year  state city      age         all_deaths nrow_agg</span></span>
+<span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;            &lt;int&gt;    &lt;int&gt;</span></span>
+<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a><span class="co">#&gt;  1 1962  CT    Hartford  1-24 years           2        2</span></span>
+<span id="cb24-17"><a href="#cb24-17" tabindex="-1"></a><span class="co">#&gt;  2 1962  CT    Hartford  25-44 years          3        2</span></span>
+<span id="cb24-18"><a href="#cb24-18" tabindex="-1"></a><span class="co">#&gt;  3 1962  CT    Hartford  45-64 years         35        2</span></span>
+<span id="cb24-19"><a href="#cb24-19" tabindex="-1"></a><span class="co">#&gt;  4 1962  CT    Hartford  65+ years           54        2</span></span>
+<span id="cb24-20"><a href="#cb24-20" tabindex="-1"></a><span class="co">#&gt;  5 1962  CT    Hartford  &lt;1 year             10        2</span></span>
+<span id="cb24-21"><a href="#cb24-21" tabindex="-1"></a><span class="co">#&gt;  6 1962  MA    Cambridge 1-24 years           0        1</span></span>
+<span id="cb24-22"><a href="#cb24-22" tabindex="-1"></a><span class="co">#&gt;  7 1962  MA    Cambridge 25-44 years          2        1</span></span>
+<span id="cb24-23"><a href="#cb24-23" tabindex="-1"></a><span class="co">#&gt;  8 1962  MA    Cambridge 45-64 years          7        1</span></span>
+<span id="cb24-24"><a href="#cb24-24" tabindex="-1"></a><span class="co">#&gt;  9 1962  MA    Cambridge 65+ years           29        1</span></span>
+<span id="cb24-25"><a href="#cb24-25" tabindex="-1"></a><span class="co">#&gt; 10 1962  MA    Cambridge &lt;1 year              1        1</span></span>
+<span id="cb24-26"><a href="#cb24-26" tabindex="-1"></a><span class="co">#&gt; 11 1963  CT    Hartford  1-24 years           5        3</span></span>
+<span id="cb24-27"><a href="#cb24-27" tabindex="-1"></a><span class="co">#&gt; 12 1963  CT    Hartford  25-44 years         13        3</span></span>
+<span id="cb24-28"><a href="#cb24-28" tabindex="-1"></a><span class="co">#&gt; 13 1963  CT    Hartford  45-64 years         51        3</span></span>
+<span id="cb24-29"><a href="#cb24-29" tabindex="-1"></a><span class="co">#&gt; 14 1963  CT    Hartford  65+ years          107        3</span></span>
+<span id="cb24-30"><a href="#cb24-30" tabindex="-1"></a><span class="co">#&gt; 15 1963  CT    Hartford  &lt;1 year             16        3</span></span></code></pre></div>
 </div>
 </div>
 </div>
 <div id="conclusions" class="section level1">
 <h1>Conclusions</h1>
 <p><code>rolap</code> package offers a set of operations that allow us
-to transform flat tables into star databases. From several star
-databases you can define a constellation with conformed dimensions.</p>
+to transform tables into star databases. From several star databases you
+can define a constellation with conformed dimensions.</p>
 <p>Operations have been designed to be intuitive and easy to use. The
 result greatly facilitates the data transformation process for the
 exposed situation.</p>

@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -7,7 +7,7 @@ knitr::opts_chunk$set(
 ## ----setup, echo = FALSE, message=FALSE---------------------------------------
 library(rolap)
 
-## ---- results = "asis", echo = FALSE------------------------------------------
+## ----results = "asis", echo = FALSE-------------------------------------------
 pander::pandoc.table(ft, split.table = Inf)
 
 ## -----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ ft_age <- ft |>
   dplyr::mutate(`All Deaths` = as.integer(`All Deaths`)) |>
   dplyr::mutate(Age = stringr::str_replace(Age, " \\(all cause deaths\\)", ""))
 
-## ---- results = "asis", echo = FALSE------------------------------------------
+## ----results = "asis", echo = FALSE-------------------------------------------
 pander::pandoc.table(head(ft_age, 15), split.table = Inf)
 
 ## -----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ l_cause <- db_cause |>
   snake_case() |>
   as_tibble_list()
 
-## ---- results = "asis", echo = FALSE------------------------------------------
+## ----results = "asis", echo = FALSE-------------------------------------------
 for (i in 1:length(l_cause)) {
   pander::pandoc.table(l_cause[[i]], split.table = Inf)
 }
@@ -128,7 +128,7 @@ db_cause <- star_database(s_cause, ft_num2) |>
 l_cause <- db_cause |>
   as_tibble_list()
 
-## ---- results = "asis", echo = FALSE------------------------------------------
+## ----results = "asis", echo = FALSE-------------------------------------------
 for (i in 1:length(l_cause)) {
   pander::pandoc.table(l_cause[[i]], split.table = Inf)
 }
@@ -152,7 +152,7 @@ db_age <- star_database(s_age, ft_age2) |>
 l_age <- db_age |>
   as_tibble_list()
 
-## ---- results = "asis", echo = FALSE------------------------------------------
+## ----results = "asis", echo = FALSE-------------------------------------------
 for (i in 1:length(l_age)) {
   pander::pandoc.table(l_age[[i]], split.table = Inf)
 }
@@ -164,10 +164,25 @@ ct <- constellation("MRS", list(db_cause, db_age))
 lc <- ct |>
   as_tibble_list()
 
-## ---- results = "asis", echo = FALSE------------------------------------------
+## ----results = "asis", echo = FALSE-------------------------------------------
 for (i in 1:length(lc)) {
   pander::pandoc.table(lc[[i]], split.table = Inf)
 }
+
+## -----------------------------------------------------------------------------
+s_age2 <- star_schema() |>
+  define_facts(name = "MRS Age 2",
+               measures = c("All Deaths")) |>
+  define_dimension(when) |>
+  define_dimension(where) |>
+  define_dimension(name = "Who",
+                         attributes = c("Age"))
+
+db_age2 <- star_database(s_age2, ft_age) |>
+  snake_case()
+
+## -----------------------------------------------------------------------------
+ct2 <- constellation("MRS2", list(ct, db_age2))
 
 ## -----------------------------------------------------------------------------
 db_cause |>
@@ -200,4 +215,12 @@ db <- DBI::dbConnect(RSQLite::SQLite())
 ct_dm_db <- dm::copy_dm_to(db, ct_dm)
 ct_dm_db
 DBI::dbDisconnect(db)
+
+## -----------------------------------------------------------------------------
+db_cause |>
+  as_single_tibble_list()
+
+## -----------------------------------------------------------------------------
+ct |>
+  as_single_tibble_list()
 
