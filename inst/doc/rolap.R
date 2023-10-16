@@ -158,7 +158,7 @@ for (i in 1:length(l_age)) {
 }
 
 ## ----example5-----------------------------------------------------------------
-ct <- constellation("MRS", list(db_cause, db_age))
+ct <- constellation("MRS", db_cause, db_age)
 
 ## ----example6-----------------------------------------------------------------
 lc <- ct |>
@@ -182,7 +182,7 @@ db_age2 <- star_database(s_age2, ft_age) |>
   snake_case()
 
 ## -----------------------------------------------------------------------------
-ct2 <- constellation("MRS2", list(ct, db_age2))
+ct2 <- constellation("MRS2", ct, db_age2)
 
 ## -----------------------------------------------------------------------------
 db_cause |>

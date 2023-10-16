@@ -4,18 +4,22 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-## -----------------------------------------------------------------------------
+## ----echo=FALSE---------------------------------------------------------------
 library(rolap)
+#  mrs_ft: Declared as a variable instead of reading from the file due to problem building macos-latest (release)
 
-file <-
-  system.file(
-    "extdata",
-    "deaths_122_us_cities_1962_2016_mortality_reporting_system.csv",
-    package = "rolap"
-  )
-
-mrs_ft <-
-  read_flat_table_file(name = 'mrs', file, unknown_value = "Not available")
+## ----eval=FALSE---------------------------------------------------------------
+#  library(rolap)
+#  
+#  file <-
+#    system.file(
+#      "extdata",
+#      "mrs_122_us_cities_1962_2016.csv",
+#      package = "rolap"
+#    )
+#  
+#  mrs_ft <-
+#    read_flat_table_file(name = 'mrs', file, unknown_value = "Not available")
 
 ## ----results = "asis"---------------------------------------------------------
 ft <- mrs_ft |> 
@@ -334,7 +338,7 @@ db_dm |>
   dm::dm_draw(rankdir = "LR", view_type = "all")
 
 ## ----example5-----------------------------------------------------------------
-mrs_db <- constellation("mrs", list(mrs_cause_db, mrs_age_db))
+mrs_db <- constellation("mrs", mrs_cause_db, mrs_age_db)
 
 ## -----------------------------------------------------------------------------
 db_dm <- mrs_db |>

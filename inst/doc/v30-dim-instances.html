@@ -386,10 +386,10 @@ objects, we can see their number of instances.</p>
 <span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> names) {</span>
 <span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;name: %s, %d rows</span><span class="sc">\n</span><span class="st">&quot;</span>, n, <span class="fu">nrow</span>(db_tl[[n]])))</span>
 <span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>}</span>
-<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt; name: transaction_summary, 777 rows</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt; name: transaction_summary, 995 rows</span></span>
 <span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co">#&gt; name: what, 27 rows</span></span>
-<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#&gt; name: when, 84 rows</span></span>
-<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#&gt; name: when_paid, 84 rows</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#&gt; name: when, 1366 rows</span></span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#&gt; name: when_paid, 1366 rows</span></span>
 <span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a><span class="co">#&gt; name: where_chain, 33 rows</span></span>
 <span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a><span class="co">#&gt; name: who_segment, 6 rows</span></span></code></pre></div>
 <p>If instead of all the tables, we want to focus on the dimensions, we
@@ -682,7 +682,15 @@ simplification: The one shown below.</p>
 <span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>            <span class="st">&#39;Provoz.nápl.&#39;</span>, <span class="st">&#39;Umývanie voz&#39;</span>, <span class="st">&#39;Zboží nesp.&#39;</span>, <span class="st">&#39;Zpr.nakupu&#39;</span>),</span>
 <span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a>    <span class="at">new =</span> <span class="fu">c</span>(<span class="st">&#39;Other&#39;</span>)</span>
 <span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a>  <span class="fu">group_dimension_instances</span>(<span class="at">name =</span> <span class="st">&#39;what&#39;</span>)</span></code></pre></div>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a>  <span class="fu">group_dimension_instances</span>(<span class="at">name =</span> <span class="st">&#39;what&#39;</span>)</span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="co">#&gt; Warning in res$name == name: longitud de objeto mayor no es múltiplo de la</span></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a><span class="co">#&gt; longitud de uno menor</span></span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a></span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a><span class="co">#&gt; Warning in res$name == name: longitud de objeto mayor no es múltiplo de la</span></span>
+<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a><span class="co">#&gt; longitud de uno menor</span></span>
+<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a></span>
+<span id="cb11-41"><a href="#cb11-41" tabindex="-1"></a><span class="co">#&gt; Warning in res$name == name: longitud de objeto mayor no es múltiplo de la</span></span>
+<span id="cb11-42"><a href="#cb11-42" tabindex="-1"></a><span class="co">#&gt; longitud de uno menor</span></span></code></pre></div>
 <p>We change the name of some products because there seems to be an
 error or they were spelled two different ways; in others cases we group
 several products into a new one, the largest grouping is for products
@@ -719,10 +727,10 @@ records have been added as a side effect of the dimension changes.</p>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> names) {</span>
 <span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;name: %s, %d rows</span><span class="sc">\n</span><span class="st">&quot;</span>, n, <span class="fu">nrow</span>(db_tl[[n]])))</span>
 <span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>}</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; name: transaction_summary, 759 rows</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; name: transaction_summary, 984 rows</span></span>
 <span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co">#&gt; name: what, 9 rows</span></span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt; name: when, 84 rows</span></span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; name: when_paid, 84 rows</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt; name: when, 1366 rows</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; name: when_paid, 1366 rows</span></span>
 <span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="co">#&gt; name: where_chain, 33 rows</span></span>
 <span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt; name: who_segment, 6 rows</span></span>
 <span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a></span>
@@ -742,37 +750,37 @@ course the table.</p>
 <span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a></span>
 <span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>db_summary3 <span class="sc">|&gt;</span></span>
 <span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>  <span class="fu">get_unique_attribute_values</span>(<span class="st">&#39;when&#39;</span>)</span>
-<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="co">#&gt; # A tibble: 84 × 2</span></span>
-<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="co">#&gt;    date       hour </span></span>
-<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;</span></span>
-<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 09   </span></span>
-<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 20   </span></span>
-<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 21   </span></span>
-<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-23 22   </span></span>
-<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-23 23   </span></span>
-<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-24 00   </span></span>
-<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-24 03   </span></span>
-<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-24 04   </span></span>
-<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-24 05   </span></span>
-<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-24 06   </span></span>
-<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a><span class="co">#&gt; # ℹ 74 more rows</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1,366 × 2</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="co">#&gt;    date       hour        </span></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;       </span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 &quot;34800 secs&quot;</span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 &quot;35400 secs&quot;</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 &quot;35460 secs&quot;</span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-23 &quot;72720 secs&quot;</span></span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-23 &quot;73140 secs&quot;</span></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-23 &quot;76800 secs&quot;</span></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-23 &quot;81720 secs&quot;</span></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-23 &quot;82740 secs&quot;</span></span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-23 &quot;82800 secs&quot;</span></span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-24 &quot; 2040 secs&quot;</span></span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a><span class="co">#&gt; # ℹ 1,356 more rows</span></span>
 <span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a></span>
 <span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a>db_summary3 <span class="sc">|&gt;</span></span>
 <span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a>  <span class="fu">get_unique_attribute_values</span>(<span class="st">&#39;when_paid&#39;</span>)</span>
-<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a><span class="co">#&gt; # A tibble: 84 × 2</span></span>
-<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a><span class="co">#&gt;    date       hour </span></span>
-<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;</span></span>
-<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 09   </span></span>
-<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 20   </span></span>
-<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 21   </span></span>
-<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-23 22   </span></span>
-<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-23 23   </span></span>
-<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-24 00   </span></span>
-<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-24 03   </span></span>
-<span id="cb14-35"><a href="#cb14-35" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-24 04   </span></span>
-<span id="cb14-36"><a href="#cb14-36" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-24 05   </span></span>
-<span id="cb14-37"><a href="#cb14-37" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-24 06   </span></span>
-<span id="cb14-38"><a href="#cb14-38" tabindex="-1"></a><span class="co">#&gt; # ℹ 74 more rows</span></span></code></pre></div>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1,366 × 2</span></span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a><span class="co">#&gt;    date       hour        </span></span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;       </span></span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 &quot;34800 secs&quot;</span></span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 &quot;35400 secs&quot;</span></span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 &quot;35460 secs&quot;</span></span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-23 &quot;72720 secs&quot;</span></span>
+<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-23 &quot;73140 secs&quot;</span></span>
+<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-23 &quot;76800 secs&quot;</span></span>
+<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-23 &quot;81720 secs&quot;</span></span>
+<span id="cb14-35"><a href="#cb14-35" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-23 &quot;82740 secs&quot;</span></span>
+<span id="cb14-36"><a href="#cb14-36" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-23 &quot;82800 secs&quot;</span></span>
+<span id="cb14-37"><a href="#cb14-37" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-24 &quot; 2040 secs&quot;</span></span>
+<span id="cb14-38"><a href="#cb14-38" tabindex="-1"></a><span class="co">#&gt; # ℹ 1,356 more rows</span></span></code></pre></div>
 <p>Let us suppose that we are not interested in the specific hours of
 the operations, but rather the part of the day in which they were
 carried out. Therefore, we define the modifications on one of the
@@ -802,56 +810,50 @@ dimensions <em>When</em>.</p>
 <span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a>    <span class="at">old =</span> <span class="fu">c</span>(<span class="st">&#39;21&#39;</span>, <span class="st">&#39;22&#39;</span>, <span class="st">&#39;23&#39;</span>, <span class="st">&#39;00&#39;</span>, <span class="st">&#39;01&#39;</span>, <span class="st">&#39;02&#39;</span>, <span class="st">&#39;03&#39;</span>, <span class="st">&#39;04&#39;</span>),</span>
 <span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a>    <span class="at">new =</span> <span class="fu">c</span>(<span class="st">&#39;Night&#39;</span>)</span>
 <span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a>  <span class="fu">group_dimension_instances</span>(<span class="at">name =</span> <span class="st">&#39;when&#39;</span>)</span></code></pre></div>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a>  <span class="fu">group_dimension_instances</span>(<span class="at">name =</span> <span class="st">&#39;when&#39;</span>)</span>
+<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a><span class="co">#&gt; Warning in res$name == name: longitud de objeto mayor no es múltiplo de la</span></span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a><span class="co">#&gt; longitud de uno menor</span></span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a></span>
+<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a><span class="co">#&gt; Warning in res$name == name: longitud de objeto mayor no es múltiplo de la</span></span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a><span class="co">#&gt; longitud de uno menor</span></span>
+<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a></span>
+<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a><span class="co">#&gt; Warning in res$name == name: longitud de objeto mayor no es múltiplo de la</span></span>
+<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a><span class="co">#&gt; longitud de uno menor</span></span></code></pre></div>
 <p>The result obtained in both dimensions is shown below. That is, the
 modifications have been propagated to the equivalent dimension.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>db_summary4 <span class="sc">|&gt;</span></span>
 <span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  <span class="fu">get_unique_attribute_values</span>(<span class="st">&#39;when&#39;</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 18 × 2</span></span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co">#&gt;    date       hour     </span></span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;    </span></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 Evening  </span></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 Morning  </span></span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 Night    </span></span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-24 Afternoon</span></span>
-<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-24 Evening  </span></span>
-<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-24 Morning  </span></span>
-<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-24 Night    </span></span>
-<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-25 Afternoon</span></span>
-<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-25 Evening  </span></span>
-<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-25 Morning  </span></span>
-<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; 11 2012-08-25 Night    </span></span>
-<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="co">#&gt; 12 2012-08-26 Afternoon</span></span>
-<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="co">#&gt; 13 2012-08-26 Evening  </span></span>
-<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="co">#&gt; 14 2012-08-26 Morning  </span></span>
-<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="co">#&gt; 15 2012-08-26 Night    </span></span>
-<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="co">#&gt; 16 2012-08-27 Afternoon</span></span>
-<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="co">#&gt; 17 2012-08-27 Morning  </span></span>
-<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="co">#&gt; 18 2012-08-27 Night</span></span>
-<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a></span>
-<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a>db_summary4 <span class="sc">|&gt;</span></span>
-<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a>  <span class="fu">get_unique_attribute_values</span>(<span class="st">&#39;when_paid&#39;</span>)</span>
-<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="co">#&gt; # A tibble: 18 × 2</span></span>
-<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="co">#&gt;    date       hour     </span></span>
-<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;    </span></span>
-<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 Evening  </span></span>
-<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 Morning  </span></span>
-<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 Night    </span></span>
-<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-24 Afternoon</span></span>
-<span id="cb16-34"><a href="#cb16-34" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-24 Evening  </span></span>
-<span id="cb16-35"><a href="#cb16-35" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-24 Morning  </span></span>
-<span id="cb16-36"><a href="#cb16-36" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-24 Night    </span></span>
-<span id="cb16-37"><a href="#cb16-37" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-25 Afternoon</span></span>
-<span id="cb16-38"><a href="#cb16-38" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-25 Evening  </span></span>
-<span id="cb16-39"><a href="#cb16-39" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-25 Morning  </span></span>
-<span id="cb16-40"><a href="#cb16-40" tabindex="-1"></a><span class="co">#&gt; 11 2012-08-25 Night    </span></span>
-<span id="cb16-41"><a href="#cb16-41" tabindex="-1"></a><span class="co">#&gt; 12 2012-08-26 Afternoon</span></span>
-<span id="cb16-42"><a href="#cb16-42" tabindex="-1"></a><span class="co">#&gt; 13 2012-08-26 Evening  </span></span>
-<span id="cb16-43"><a href="#cb16-43" tabindex="-1"></a><span class="co">#&gt; 14 2012-08-26 Morning  </span></span>
-<span id="cb16-44"><a href="#cb16-44" tabindex="-1"></a><span class="co">#&gt; 15 2012-08-26 Night    </span></span>
-<span id="cb16-45"><a href="#cb16-45" tabindex="-1"></a><span class="co">#&gt; 16 2012-08-27 Afternoon</span></span>
-<span id="cb16-46"><a href="#cb16-46" tabindex="-1"></a><span class="co">#&gt; 17 2012-08-27 Morning  </span></span>
-<span id="cb16-47"><a href="#cb16-47" tabindex="-1"></a><span class="co">#&gt; 18 2012-08-27 Night</span></span></code></pre></div>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1,366 × 2</span></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co">#&gt;    date       hour        </span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;       </span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 &quot;34800 secs&quot;</span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 &quot;35400 secs&quot;</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 &quot;35460 secs&quot;</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-23 &quot;72720 secs&quot;</span></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-23 &quot;73140 secs&quot;</span></span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-23 &quot;76800 secs&quot;</span></span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-23 &quot;81720 secs&quot;</span></span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-23 &quot;82740 secs&quot;</span></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-23 &quot;82800 secs&quot;</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-24 &quot; 2040 secs&quot;</span></span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; # ℹ 1,356 more rows</span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a>db_summary4 <span class="sc">|&gt;</span></span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a>  <span class="fu">get_unique_attribute_values</span>(<span class="st">&#39;when_paid&#39;</span>)</span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1,366 × 2</span></span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="co">#&gt;    date       hour        </span></span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;       </span></span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 &quot;34800 secs&quot;</span></span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 &quot;35400 secs&quot;</span></span>
+<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 &quot;35460 secs&quot;</span></span>
+<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-23 &quot;72720 secs&quot;</span></span>
+<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-23 &quot;73140 secs&quot;</span></span>
+<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-23 &quot;76800 secs&quot;</span></span>
+<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-23 &quot;81720 secs&quot;</span></span>
+<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-23 &quot;82740 secs&quot;</span></span>
+<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-23 &quot;82800 secs&quot;</span></span>
+<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-24 &quot; 2040 secs&quot;</span></span>
+<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="co">#&gt; # ℹ 1,356 more rows</span></span></code></pre></div>
 <p>We do the same check as before on the number of instances of the
 tables and we observe that in this case the number of records in the
 fact table has also been reduced as a result of the aggregation carried
@@ -862,10 +864,10 @@ out.</p>
 <span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> names) {</span>
 <span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;name: %s, %d rows</span><span class="sc">\n</span><span class="st">&quot;</span>, n, <span class="fu">nrow</span>(db_tl[[n]])))</span>
 <span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>}</span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt; name: transaction_summary, 486 rows</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co">#&gt; name: transaction_summary, 984 rows</span></span>
 <span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="co">#&gt; name: what, 9 rows</span></span>
-<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co">#&gt; name: when, 18 rows</span></span>
-<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="co">#&gt; name: when_paid, 18 rows</span></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co">#&gt; name: when, 1366 rows</span></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="co">#&gt; name: when_paid, 1366 rows</span></span>
 <span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="co">#&gt; name: where_chain, 33 rows</span></span>
 <span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co">#&gt; name: who_segment, 6 rows</span></span>
 <span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a></span>
@@ -923,7 +925,7 @@ below.</p>
 <span id="cb19-25"><a href="#cb19-25" tabindex="-1"></a><span class="co">#&gt; # ℹ 16 more rows</span></span></code></pre></div>
 <p>We define the constellation and as a result the dimensions are
 integrated.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>ct <span class="ot">&lt;-</span> <span class="fu">constellation</span>(<span class="st">&quot;CSS&quot;</span>, <span class="fu">list</span>(db_summary4, db_finest2))</span>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>ct <span class="ot">&lt;-</span> <span class="fu">constellation</span>(<span class="st">&quot;CSS&quot;</span>, db_summary4, db_finest2)</span>
 <span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a></span>
 <span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">class</span>(ct)</span>
 <span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;star_database&quot;</span></span>
@@ -938,13 +940,13 @@ integrated.</p>
 <span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;name: %s, %d rows</span><span class="sc">\n</span><span class="st">&quot;</span>, n, <span class="fu">nrow</span>(db_tl[[n]])))</span>
 <span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a>}</span>
 <span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a><span class="co">#&gt; name: transaction, 921 rows</span></span>
-<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a><span class="co">#&gt; name: transaction_line, 989 rows</span></span>
-<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a><span class="co">#&gt; name: transaction_summary, 481 rows</span></span>
-<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a><span class="co">#&gt; name: what, 8 rows</span></span>
-<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a><span class="co">#&gt; name: when, 22 rows</span></span>
+<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a><span class="co">#&gt; name: transaction_line, 1000 rows</span></span>
+<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a><span class="co">#&gt; name: transaction_summary, 984 rows</span></span>
+<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a><span class="co">#&gt; name: what, 29 rows</span></span>
+<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a><span class="co">#&gt; name: when, 1965 rows</span></span>
 <span id="cb20-20"><a href="#cb20-20" tabindex="-1"></a><span class="co">#&gt; name: when_moment, 599 rows</span></span>
-<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a><span class="co">#&gt; name: when_paid, 22 rows</span></span>
-<span id="cb20-22"><a href="#cb20-22" tabindex="-1"></a><span class="co">#&gt; name: when_processed, 22 rows</span></span>
+<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a><span class="co">#&gt; name: when_paid, 1965 rows</span></span>
+<span id="cb20-22"><a href="#cb20-22" tabindex="-1"></a><span class="co">#&gt; name: when_processed, 1965 rows</span></span>
 <span id="cb20-23"><a href="#cb20-23" tabindex="-1"></a><span class="co">#&gt; name: where, 437 rows</span></span>
 <span id="cb20-24"><a href="#cb20-24" tabindex="-1"></a><span class="co">#&gt; name: where_chain, 33 rows</span></span>
 <span id="cb20-25"><a href="#cb20-25" tabindex="-1"></a><span class="co">#&gt; name: who, 902 rows</span></span>
@@ -962,20 +964,20 @@ carried over from one star database to the other.</p>
 <span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a></span>
 <span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>ct <span class="sc">|&gt;</span></span>
 <span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>  <span class="fu">get_unique_attribute_values</span>(<span class="st">&#39;when_processed&#39;</span>)</span>
-<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a><span class="co">#&gt; # A tibble: 22 × 2</span></span>
-<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a><span class="co">#&gt;    date       hour     </span></span>
-<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;    </span></span>
-<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 Evening  </span></span>
-<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 Morning  </span></span>
-<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 Night    </span></span>
-<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-24 Afternoon</span></span>
-<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-24 Evening  </span></span>
-<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-24 Morning  </span></span>
-<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-24 Night    </span></span>
-<span id="cb21-18"><a href="#cb21-18" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-25 Afternoon</span></span>
-<span id="cb21-19"><a href="#cb21-19" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-25 Evening  </span></span>
-<span id="cb21-20"><a href="#cb21-20" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-25 Morning  </span></span>
-<span id="cb21-21"><a href="#cb21-21" tabindex="-1"></a><span class="co">#&gt; # ℹ 12 more rows</span></span></code></pre></div>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1,965 × 2</span></span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a><span class="co">#&gt;    date       hour        </span></span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;      &lt;chr&gt;       </span></span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a><span class="co">#&gt;  1 2012-08-23 &quot;34800 secs&quot;</span></span>
+<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a><span class="co">#&gt;  2 2012-08-23 &quot;35400 secs&quot;</span></span>
+<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a><span class="co">#&gt;  3 2012-08-23 &quot;35460 secs&quot;</span></span>
+<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a><span class="co">#&gt;  4 2012-08-23 &quot;72720 secs&quot;</span></span>
+<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a><span class="co">#&gt;  5 2012-08-23 &quot;73140 secs&quot;</span></span>
+<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a><span class="co">#&gt;  6 2012-08-23 &quot;76800 secs&quot;</span></span>
+<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a><span class="co">#&gt;  7 2012-08-23 &quot;81720 secs&quot;</span></span>
+<span id="cb21-18"><a href="#cb21-18" tabindex="-1"></a><span class="co">#&gt;  8 2012-08-23 &quot;82740 secs&quot;</span></span>
+<span id="cb21-19"><a href="#cb21-19" tabindex="-1"></a><span class="co">#&gt;  9 2012-08-23 &quot;82800 secs&quot;</span></span>
+<span id="cb21-20"><a href="#cb21-20" tabindex="-1"></a><span class="co">#&gt; 10 2012-08-24 &quot; 2040 secs&quot;</span></span>
+<span id="cb21-21"><a href="#cb21-21" tabindex="-1"></a><span class="co">#&gt; # ℹ 1,955 more rows</span></span></code></pre></div>
 <p>The result is shown for dimension <em>when_processed</em>, which is
 not part of the star database on which the modifications were defined
 but it is modified.</p>
@@ -987,17 +989,20 @@ carried out in both star databases: They are combined taking the new
 operations from one database to another.</p>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>ct <span class="sc">|&gt;</span></span>
 <span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>  <span class="fu">get_unique_attribute_values</span>(<span class="st">&#39;what&#39;</span>, <span class="at">col_as_vector =</span> <span class="st">&quot;As a vector&quot;</span>)</span>
-<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 8 × 2</span></span>
-<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="co">#&gt;   product      `As a vector`    </span></span>
-<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;            </span></span>
-<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a><span class="co">#&gt; 1 Autokozmetik c(&#39;Autokozmetik&#39;)</span></span>
-<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a><span class="co">#&gt; 2 Diesel       c(&#39;Diesel&#39;)      </span></span>
-<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a><span class="co">#&gt; 3 Diesel +     c(&#39;Diesel +&#39;)    </span></span>
-<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a><span class="co">#&gt; 4 Nafta        c(&#39;Nafta&#39;)       </span></span>
-<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a><span class="co">#&gt; 5 Nafta +      c(&#39;Nafta +&#39;)     </span></span>
-<span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a><span class="co">#&gt; 6 Natural      c(&#39;Natural&#39;)     </span></span>
-<span id="cb22-12"><a href="#cb22-12" tabindex="-1"></a><span class="co">#&gt; 7 Natural +    c(&#39;Natural +&#39;)   </span></span>
-<span id="cb22-13"><a href="#cb22-13" tabindex="-1"></a><span class="co">#&gt; 8 Other        c(&#39;Other&#39;)</span></span></code></pre></div>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 29 × 2</span></span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="co">#&gt;    product       `As a vector`     </span></span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;         &lt;chr&gt;             </span></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a><span class="co">#&gt;  1 Additivum     c(&#39;Additivum&#39;)    </span></span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a><span class="co">#&gt;  2 Autokosmet.   c(&#39;Autokosmet.&#39;)  </span></span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a><span class="co">#&gt;  3 Autokozmetik  c(&#39;Autokozmetik&#39;) </span></span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a><span class="co">#&gt;  4 Autoprísluš.  c(&#39;Autoprísluš.&#39;) </span></span>
+<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a><span class="co">#&gt;  5 Dalnic.popl.  c(&#39;Dalnic.popl.&#39;) </span></span>
+<span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a><span class="co">#&gt;  6 Diesel        c(&#39;Diesel&#39;)       </span></span>
+<span id="cb22-12"><a href="#cb22-12" tabindex="-1"></a><span class="co">#&gt;  7 Diesel +      c(&#39;Diesel +&#39;)     </span></span>
+<span id="cb22-13"><a href="#cb22-13" tabindex="-1"></a><span class="co">#&gt;  8 Diesel aditiv c(&#39;Diesel aditiv&#39;)</span></span>
+<span id="cb22-14"><a href="#cb22-14" tabindex="-1"></a><span class="co">#&gt;  9 Knihy,nov.    c(&#39;Knihy,nov.&#39;)   </span></span>
+<span id="cb22-15"><a href="#cb22-15" tabindex="-1"></a><span class="co">#&gt; 10 LPG           c(&#39;LPG&#39;)          </span></span>
+<span id="cb22-16"><a href="#cb22-16" tabindex="-1"></a><span class="co">#&gt; # ℹ 19 more rows</span></span></code></pre></div>
 <p>The result obtained is explained because in star database
 <em>db_summary</em> the new operations of star database
 <em>db_finest</em> have been applied and vice versa. In the star
@@ -1016,19 +1021,25 @@ can continue to make changes to the constellation, as shown below.</p>
 <span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a>    <span class="at">new =</span> <span class="fu">c</span>(<span class="st">&#39;Other&#39;</span>)</span>
 <span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
 <span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a>  <span class="fu">group_dimension_instances</span>(<span class="at">name =</span> <span class="st">&#39;what&#39;</span>)</span>
-<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a></span>
-<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a>ct2 <span class="sc">|&gt;</span></span>
-<span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a>  <span class="fu">get_unique_attribute_values</span>(<span class="st">&#39;what&#39;</span>, <span class="at">col_as_vector =</span> <span class="st">&quot;As a vector&quot;</span>)</span>
-<span id="cb23-12"><a href="#cb23-12" tabindex="-1"></a><span class="co">#&gt; # A tibble: 7 × 2</span></span>
-<span id="cb23-13"><a href="#cb23-13" tabindex="-1"></a><span class="co">#&gt;   product   `As a vector` </span></span>
-<span id="cb23-14"><a href="#cb23-14" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt;         </span></span>
-<span id="cb23-15"><a href="#cb23-15" tabindex="-1"></a><span class="co">#&gt; 1 Diesel    c(&#39;Diesel&#39;)   </span></span>
-<span id="cb23-16"><a href="#cb23-16" tabindex="-1"></a><span class="co">#&gt; 2 Diesel +  c(&#39;Diesel +&#39;) </span></span>
-<span id="cb23-17"><a href="#cb23-17" tabindex="-1"></a><span class="co">#&gt; 3 Nafta     c(&#39;Nafta&#39;)    </span></span>
-<span id="cb23-18"><a href="#cb23-18" tabindex="-1"></a><span class="co">#&gt; 4 Nafta +   c(&#39;Nafta +&#39;)  </span></span>
-<span id="cb23-19"><a href="#cb23-19" tabindex="-1"></a><span class="co">#&gt; 5 Natural   c(&#39;Natural&#39;)  </span></span>
-<span id="cb23-20"><a href="#cb23-20" tabindex="-1"></a><span class="co">#&gt; 6 Natural + c(&#39;Natural +&#39;)</span></span>
-<span id="cb23-21"><a href="#cb23-21" tabindex="-1"></a><span class="co">#&gt; 7 Other     c(&#39;Other&#39;)</span></span></code></pre></div>
+<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a><span class="co">#&gt; Warning in res$name == name: longitud de objeto mayor no es múltiplo de la</span></span>
+<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a><span class="co">#&gt; longitud de uno menor</span></span>
+<span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a></span>
+<span id="cb23-12"><a href="#cb23-12" tabindex="-1"></a>ct2 <span class="sc">|&gt;</span></span>
+<span id="cb23-13"><a href="#cb23-13" tabindex="-1"></a>  <span class="fu">get_unique_attribute_values</span>(<span class="st">&#39;what&#39;</span>, <span class="at">col_as_vector =</span> <span class="st">&quot;As a vector&quot;</span>)</span>
+<span id="cb23-14"><a href="#cb23-14" tabindex="-1"></a><span class="co">#&gt; # A tibble: 28 × 2</span></span>
+<span id="cb23-15"><a href="#cb23-15" tabindex="-1"></a><span class="co">#&gt;    product       `As a vector`     </span></span>
+<span id="cb23-16"><a href="#cb23-16" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;         &lt;chr&gt;             </span></span>
+<span id="cb23-17"><a href="#cb23-17" tabindex="-1"></a><span class="co">#&gt;  1 Additivum     c(&#39;Additivum&#39;)    </span></span>
+<span id="cb23-18"><a href="#cb23-18" tabindex="-1"></a><span class="co">#&gt;  2 Autokosmet.   c(&#39;Autokosmet.&#39;)  </span></span>
+<span id="cb23-19"><a href="#cb23-19" tabindex="-1"></a><span class="co">#&gt;  3 Autoprísluš.  c(&#39;Autoprísluš.&#39;) </span></span>
+<span id="cb23-20"><a href="#cb23-20" tabindex="-1"></a><span class="co">#&gt;  4 Dalnic.popl.  c(&#39;Dalnic.popl.&#39;) </span></span>
+<span id="cb23-21"><a href="#cb23-21" tabindex="-1"></a><span class="co">#&gt;  5 Diesel        c(&#39;Diesel&#39;)       </span></span>
+<span id="cb23-22"><a href="#cb23-22" tabindex="-1"></a><span class="co">#&gt;  6 Diesel +      c(&#39;Diesel +&#39;)     </span></span>
+<span id="cb23-23"><a href="#cb23-23" tabindex="-1"></a><span class="co">#&gt;  7 Diesel aditiv c(&#39;Diesel aditiv&#39;)</span></span>
+<span id="cb23-24"><a href="#cb23-24" tabindex="-1"></a><span class="co">#&gt;  8 Knihy,nov.    c(&#39;Knihy,nov.&#39;)   </span></span>
+<span id="cb23-25"><a href="#cb23-25" tabindex="-1"></a><span class="co">#&gt;  9 LPG           c(&#39;LPG&#39;)          </span></span>
+<span id="cb23-26"><a href="#cb23-26" tabindex="-1"></a><span class="co">#&gt; 10 Mytí vozidel  c(&#39;Mytí vozidel&#39;) </span></span>
+<span id="cb23-27"><a href="#cb23-27" tabindex="-1"></a><span class="co">#&gt; # ℹ 18 more rows</span></span></code></pre></div>
 </div>
 </div>
 <div id="conclusions" class="section level1">

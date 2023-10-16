@@ -218,7 +218,7 @@ db_finest2 |>
   get_unique_attribute_values('what', col_as_vector = "As a vector")
 
 ## -----------------------------------------------------------------------------
-ct <- constellation("CSS", list(db_summary4, db_finest2))
+ct <- constellation("CSS", db_summary4, db_finest2)
 
 class(ct)
 

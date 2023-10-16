@@ -4,35 +4,29 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-## -----------------------------------------------------------------------------
-library(RMariaDB)
+## ----echo=FALSE---------------------------------------------------------------
+library(rolap)
+#  transactions_db: Declared as variable instead of reading from the DB due to problem building macos-latest (release) with dm::dm_from_con(ccs_db, learn_keys = TRUE) function call.
+ccs_sel_dm <- transactions_db
 
-ccs_db <- RMariaDB::dbConnect(
-  RMariaDB::MariaDB(),
-  username = "guest",
-  password = "relational",
-  dbname = "ccs",
-  host = "relational.fit.cvut.cz"
-)
+## ----eval=FALSE---------------------------------------------------------------
+#  ccs_db <- RMariaDB::dbConnect(
+#    RMariaDB::MariaDB(),
+#    username = "guest",
+#    password = "relational",
+#    dbname = "ccs",
+#    host = "relational.fit.cvut.cz"
+#  )
 
-## ----message=FALSE------------------------------------------------------------
-library(dm)
+## ----message=FALSE, eval=FALSE------------------------------------------------
+#  ccs_dm <- dm::dm_from_con(ccs_db, learn_keys = TRUE)
 
-ccs_dm <- dm::dm_from_con(ccs_db, learn_keys = TRUE)
-
-## -----------------------------------------------------------------------------
-ccs_dm |>
-  dm::dm_draw(view_type = "all")
-
-## -----------------------------------------------------------------------------
-ccs_dm$transactions
-
-## -----------------------------------------------------------------------------
-ccs_sel_dm <-
-  ccs_dm[c('transactions_1k', 'customers', 'gasstations', 'products')] |>
-  dm::dm_add_fk(transactions_1k, CustomerID, customers) |>
-  dm::dm_add_fk(transactions_1k, GasStationID, gasstations) |>
-  dm::dm_add_fk(transactions_1k, ProductID, products)
+## ----eval=FALSE---------------------------------------------------------------
+#  ccs_sel_dm <-
+#    ccs_dm[c('transactions_1k', 'customers', 'gasstations', 'products')] |>
+#    dm::dm_add_fk(transactions_1k, CustomerID, customers) |>
+#    dm::dm_add_fk(transactions_1k, GasStationID, gasstations) |>
+#    dm::dm_add_fk(transactions_1k, ProductID, products)
 
 ## -----------------------------------------------------------------------------
 ccs_sel_dm |>
@@ -47,8 +41,8 @@ class(transactions_ft)
 nrow(transactions_ft)
 dput(colnames(transactions_ft))
 
-## -----------------------------------------------------------------------------
-DBI::dbDisconnect(ccs_db)
+## ----eval=FALSE---------------------------------------------------------------
+#  DBI::dbDisconnect(ccs_db)
 
 ## -----------------------------------------------------------------------------
 length(unique(transactions_ft$TransactionID))
@@ -62,7 +56,7 @@ nrow(unique(transactions_ft[, c("Date", "Time", "CardID", "ProductID")]))
 
 ## -----------------------------------------------------------------------------
 transactions_ft <- transactions_ft |>
-  dplyr::mutate(Hour = format(as.POSIXct(Time), format = "%H"))  |>
+  dplyr::mutate(Hour = format(Time, format = "%H"))  |>
   dplyr::mutate(`Processing Date` = format(as.POSIXct(Date) + 
     lubridate::days(2), format = "%Y-%m-%d"))
 
@@ -242,7 +236,7 @@ db_summary_dm |>
   dm::dm_draw(view_type = "all")
 
 ## -----------------------------------------------------------------------------
-ct <- rolap::constellation("CSS", list(db_finest, db_summary))
+ct <- rolap::constellation("CSS", db_finest, db_summary)
 
 db_tl <- ct |>
   rolap::as_tibble_list()
