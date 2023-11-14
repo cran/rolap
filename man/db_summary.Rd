@@ -8,7 +8,7 @@
 A \code{star_database}.
 }
 \source{
-\url{https://relational.fit.cvut.cz/dataset/CCS}
+\url{https://fit.cvut.cz/cs}
 }
 \usage{
 db_summary
@@ -16,13 +16,9 @@ db_summary
 \description{
 Multidimensional design with a summary from the data available at the source.
 }
-\details{
-The development has been done in the vignette \code{vignette("v20-rdbms-dm")}.
-}
 \seealso{
-Other database example data: 
-\code{\link{db_finest}},
-\code{\link{transactions_db}}
+Other debit card example data: 
+\code{\link{db_finest}}
 }
-\concept{database example data}
+\concept{debit card example data}
 \keyword{datasets}

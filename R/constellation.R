@@ -1,8 +1,9 @@
 #' Create constellation
 #'
-#' Creates a constellation from a list of `star_database` objects. All
-#' dimensions with the same name in the star schemas have to be conformable
-#' (share the same structure, even though they have different instances).
+#' Creates a constellation from a list of `star_database` objects. A constellation
+#' is also represented by a `star_database` object. All dimensions with the same
+#' name in the star schemas have to be conformable (share the same structure, even
+#' though they have different instances).
 #'
 #' @param name A string.
 #' @param ... `star_database` objects.
@@ -147,11 +148,14 @@ constellation <- function(name = NULL, ...) {
     operations = operations,
     lookup_tables = lookup_tables,
     schemas = schemas,
+    refresh = list(),
+    deploy = list(),
     facts = facts,
     dimensions = dimensions,
     rpd = rpd
   ), class = "star_database")
-  rpd_in_constellation(c)
+  c <- rpd_in_constellation(c)
+  purge_dimension_instances_star_database(c)
 }
 
 #' Share dimension instance operations between all `star_database` objects
@@ -326,8 +330,8 @@ rpd_in_constellation <- function(db) {
 #'
 #' @return A list of vector of strings with dimension names.
 #'
-#' @family star database and constellation definition functions
-#' @seealso \code{\link{as_tibble_list}}, \code{\link{as_dm_class}}
+#' @family star database definition functions
+#' @seealso \code{\link{star_schema}}, \code{\link{flat_table}}
 #'
 #' @examples
 #'

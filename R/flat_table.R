@@ -4,7 +4,8 @@
 #'
 #' The objective is to allow the transformation of flat tables.
 #'
-#' We can also indicate the value that is used in the data with undefined values.
+#' We indicate the name of the flat table and we can also give the value that
+#' will be used to replace NA or empty values.
 #'
 #' @param name A string.
 #' @param instances A `tibble`, table of instances.
@@ -115,8 +116,11 @@ get_measure_names.flat_table <- function(db, name = NULL, ordered = FALSE, as_de
 #'
 #' @export
 set_attribute_names.flat_table <- function(db, name = NULL, old = NULL, new) {
-  old <- validate_attributes(db$attributes, old)
   stopifnot("There are repeated attributes." = length(new) == length(unique(new)))
+  if (is.null(old)) {
+    old <- names(new)
+  }
+  old <- validate_attributes(db$attributes, old)
   stopifnot("The number of new names must be equal to the number of names to replace." = length(old) == length(new))
   names <- replace_names(db$attributes, old, new)
   if (length(c(names, db$measures)) != length(unique(snakecase::to_snake_case(c(names, db$measures))))) {
@@ -134,8 +138,11 @@ set_attribute_names.flat_table <- function(db, name = NULL, old = NULL, new) {
 #'
 #' @export
 set_measure_names.flat_table <- function(db, name = NULL, old = NULL, new) {
-  old <- validate_measures(db$measures, old)
   stopifnot("There are repeated measures." = length(new) == length(unique(new)))
+  if (is.null(old)) {
+    old <- names(new)
+  }
+  old <- validate_measures(db$measures, old)
   stopifnot("The number of new names must be equal to the number of names to replace." = length(old) == length(new))
   names <- replace_names(db$measures, old, new)
   if (length(c(names, db$attributes)) != length(unique(snakecase::to_snake_case(c(names, db$attributes))))) {
@@ -257,7 +264,7 @@ replace_attribute_values.flat_table <- function(db, name = NULL, attributes = NU
 #' @return A `tibble`, the table.
 #'
 #' @family flat table definition functions
-#' @seealso \code{\link{select_attributes}}, \code{\link{select_measures}}
+#' @seealso \code{\link{star_database}}
 #'
 #' @examples
 #'
@@ -283,7 +290,7 @@ get_table.flat_table <- function(ft) {
 #' @return A string.
 #'
 #' @family flat table definition functions
-#' @seealso \code{\link{select_attributes}}, \code{\link{select_measures}}
+#' @seealso \code{\link{star_database}}
 #'
 #' @examples
 #'
@@ -316,7 +323,7 @@ get_unknown_value_defined.flat_table <- function(ft) {
 #' @return A `tibble` with unknown values in instances.
 #'
 #' @family flat table definition functions
-#' @seealso \code{\link{replace_empty_values}}
+#' @seealso \code{\link{star_database}}
 #'
 #' @examples
 #'
@@ -358,7 +365,7 @@ get_unknown_values.flat_table <- function(ft, attributes = NULL, col_as_vector =
 #' @return A `star_database` object.
 #'
 #' @family flat table definition functions
-#' @seealso \code{\link{star_schema}}, \code{\link{star_database}}
+#' @seealso \code{\link{star_database}}
 #'
 #' @examples
 #'

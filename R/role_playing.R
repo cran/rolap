@@ -15,7 +15,7 @@
 #' @return A `star_database` object.
 #'
 #' @family star database definition functions
-#' @seealso \code{\link{as_tibble_list}}, \code{\link{as_dm_class}}
+#' @seealso \code{\link{star_schema}}, \code{\link{flat_table}}
 #'
 #' @examples
 #'
@@ -181,6 +181,30 @@ simplify_rpd_dimensions <- function(db, names) {
     }
   }
   unique(res)
+}
+
+
+
+#' From rpd dimensions, leave only contained in vector of names.
+#'
+#' @param db A `star_database` object.
+#' @param names A vector of strings, dimension names.
+#'
+#' @return A list of vectors of dimension names.
+#'
+#' @keywords internal
+filter_rpd_dimensions <- function(db, names) {
+  rpd <- list()
+  rpd_names <- NULL
+  for (i in seq_along(db$rpd)) {
+    db$rpd[[i]] <- intersect(db$rpd[[i]], names)
+    if (length(db$rpd[[i]]) > 1) {
+      rpd <- c(rpd, list(db$rpd[[i]]))
+      rpd_names <- c(rpd_names, db$rpd[[i]][1])
+    }
+  }
+  names(rpd) <- rpd_names
+  rpd
 }
 
 

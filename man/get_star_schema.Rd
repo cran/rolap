@@ -29,6 +29,8 @@ st <- f2 |>
 
 }
 \seealso{
+\code{\link{star_database}}
+
 Other star database refresh functions: 
 \code{\link{get_existing_fact_instances}()},
 \code{\link{get_lookup_tables}()},

@@ -74,6 +74,27 @@ validate_measures <- function(defined_measures, measures) {
 }
 
 
+#' Validate fact names
+#'
+#' @param defined_facts A vector of strings, defined fact names.
+#' @param facts A vector of strings, fact names.
+#'
+#' @return A vector of strings, fact names.
+#'
+#' @keywords internal
+validate_facts <- function(defined_facts, facts) {
+  stopifnot("Some fact name must be indicated." = length(facts) > 0)
+  facts <- snakecase::to_snake_case(facts)
+  stopifnot("There are repeated fact names." = length(facts) == length(unique(facts)))
+  for (f in facts) {
+    if (!(f %in% defined_facts)) {
+      stop(sprintf("'%s' is not defined as fact name.", f))
+    }
+  }
+  facts
+}
+
+
 #' Replace names
 #'
 #' @param original A string, original names.
@@ -111,6 +132,9 @@ transform_names <- function(names, ordered, as_definition) {
     v <- add_dput_column(v, column = 'vector')
     names <- v$vector
   }
+  if (length(names) == 0) {
+    names <- NULL
+  }
   names
 }
 
@@ -142,3 +166,32 @@ add_dput_column <- function(v, column) {
   v
 }
 
+
+#' Validate names
+#'
+#' @param defined_names A vector of strings, defined attribute names.
+#' @param names A vector of strings, new attribute names.
+#' @param concept A string, treated concept.
+#' @param repeated A boolean, repeated names allowed.
+#'
+#' @return A vector of strings, names.
+#'
+#' @keywords internal
+validate_names <- function(defined_names, names, concept = 'name', repeated = FALSE) {
+  if (is.null(names)) {
+    names <- defined_names
+  } else {
+    if (!repeated) {
+      stopifnot("There are repeated values." = length(names) == length(unique(names)))
+    }
+    for (name in names) {
+      if (!(name %in% defined_names)) {
+        stop(sprintf(
+          "'%s' is not defined as %s.",
+          name, concept
+        ))
+      }
+    }
+  }
+  names
+}

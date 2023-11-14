@@ -1,3 +1,15 @@
+# rolap 2.4.0
+* Functions to query a star database: `star_query()`, `select_fact()`, `select_dimension()`, `filter_dimension()` and `run_query()`.
+* Functions to deploy a star database in one or more relational databases: `deploy()`, `cancel_deployment()`, `get_deployment_names()`, `load_star_database()`.
+* New functions: `get_star_database()`, `as_rdb()`, `draw_tables()`.
+* Vignette about star database deployment process.
+* Vignette about star database export features.
+* Vignette about multidimensional queries.
+* Include new items in the README file.
+* US census flat table dataset.
+* Fix `snake_case()` register refresh operation for constellation case.
+* Fix `constellation()` refresh structure integration.
+
 # rolap 2.3.0
 * Change star database list as parameter in `constellation()` function.
 * Fix `replace_empty_values()` with spaces at the beginning or end of non-empty strings.

@@ -1,3 +1,37 @@
+#' Get star database
+#'
+#' It obtains the star database: For updates, the one defined from the data; for
+#' constellations, the one indicated by the parameter.
+#'
+#' @param db A `star_database_update` object.
+#' @param name A string, star database name (fact name).
+#'
+#' @return A `star_database` object.
+#'
+#' @family star database refresh functions
+#' @seealso \code{\link{star_database}}
+#'
+#' @examples
+#'
+#' f1 <- flat_table('ft_num', ft_cause_rpd) |>
+#'   as_star_database(mrs_cause_schema_rpd)
+#' f2 <- flat_table('ft_num2', ft_cause_rpd) |>
+#'   update_according_to(f1)
+#' st <- f2 |>
+#'   get_star_database()
+#'
+#' db1 <- star_database(mrs_cause_schema, ft_num) |>
+#'   snake_case()
+#' db2 <- star_database(mrs_age_schema, ft_age) |>
+#'   snake_case()
+#' ct <- constellation("MRS", db1, db2)
+#' names <- ct |>
+#'   get_fact_names()
+#' st <- ct |>
+#'   get_star_database(names[1])
+#'
+#' @export
+get_star_database <- function(db, name) UseMethod("get_star_database")
 
 #' Transform names according to the snake case style
 #'
@@ -86,6 +120,11 @@ get_measure_names <- function(db, name, ordered, as_definition) UseMethod("get_m
 #'
 #' Rename attributes in a flat table or a dimension in a star database.
 #'
+#' To rename the attributes there are three possibilities: 1) give only one vector
+#' with the new names for all the attributes; 2) a vector of old names and another
+#' of new names that must correspond; 3) a vector of new names whose names are
+#' the old names they replace.
+#'
 #' @param db A `flat_table` or `star_database` object.
 #' @param name A string, dimension name.
 #' @param old A vector of names.
@@ -110,13 +149,25 @@ get_measure_names <- function(db, name, ordered, as_definition) UseMethod("get_m
 #'
 #' db <- star_database(mrs_cause_schema, ft_num) |>
 #'   set_attribute_names(name = "where",
-#'                       old = c("REGION"),
-#'                       new = c("Region"))
+#'                       old = "REGION",
+#'                       new = "Region")
+#'
+#' new <- "Region"
+#' names(new) <- "REGION"
+#' db <- star_database(mrs_cause_schema, ft_num) |>
+#'   set_attribute_names(name = "where",
+#'                       new = new)
 #'
 #' ft <- flat_table('iris', iris) |>
 #'   set_attribute_names(
-#'     old = c('Species'),
-#'     new = c('species'))
+#'     old = 'Species',
+#'     new = 'species')
+#'
+#' new <- "species"
+#' names(new) <- "Species"
+#' ft <- flat_table('iris', iris) |>
+#'   set_attribute_names(
+#'     new = new)
 #'
 #' @export
 set_attribute_names <- function(db, name, old, new) UseMethod("set_attribute_names")
@@ -125,6 +176,11 @@ set_attribute_names <- function(db, name, old, new) UseMethod("set_attribute_nam
 #' Rename measures
 #'
 #' Rename measures in a flat table or in facts in a star database.
+#'
+#' To rename the measures there are three possibilities: 1) give only one vector
+#' with the new names for all the measures; 2) a vector of old names and another
+#' of new names that must correspond; 3) a vector of new names whose names are
+#' the old names they replace.
 #'
 #' @param db A `flat_table` or `star_database` object.
 #' @param name A string, fact name.
@@ -151,6 +207,12 @@ set_attribute_names <- function(db, name, old, new) UseMethod("set_attribute_nam
 #'   set_measure_names(
 #'     old = c('Petal.Length', 'Petal.Width', 'Sepal.Length', 'Sepal.Width'),
 #'     new = c('pl', 'pw', 'ls', 'sw'))
+#'
+#' new <- c('pl', 'pw', 'ls', 'sw')
+#' names(new) <- c('Petal.Length', 'Petal.Width', 'Sepal.Length', 'Sepal.Width')
+#' ft <- flat_table('iris', iris) |>
+#'   set_measure_names(
+#'     new = new)
 #'
 #' @export
 set_measure_names <- function(db, name, old, new) UseMethod("set_measure_names")
@@ -326,13 +388,4 @@ get_unique_attribute_values <- function(db, name, attributes, col_as_vector) Use
 #'
 #' @export
 replace_attribute_values <- function(db, name, attributes, old, new) UseMethod("replace_attribute_values")
-
-
-# Internal ---------------------------------------------------------------------
-
-get_measure_names_schema <- function(schema) UseMethod("get_measure_names_schema")
-
-get_attribute_names_schema <- function(schema) UseMethod("get_attribute_names_schema")
-
-snake_case_table <- function(table) UseMethod("snake_case_table")
 

@@ -101,6 +101,8 @@ test_that("constellation() define constellation", {
             )
           ), class = "star_schema")
         ),
+        refresh = list(),
+        deploy = list(),
         facts = list(
           mrs_cause = structure(
             list(
@@ -379,6 +381,8 @@ test_that("constellation() define constellation", {
             )
           ), class = "star_schema")
         ),
+        refresh = list(),
+        deploy = list(),
         facts = list(
           mrs_cause = structure(
             list(
@@ -680,6 +684,8 @@ test_that("constellation() define constellation", {
             )
           ), class = "star_schema")
         ),
+        refresh = list(),
+        deploy = list(),
         facts = list(
           mrs_age = structure(
             list(

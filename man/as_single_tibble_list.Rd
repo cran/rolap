@@ -17,7 +17,7 @@ A list of \code{tibble}
 }
 \description{
 Allows you to transform a star database into a flat table. If we have a
-constellaton, it returns a list of flat tables.
+constellation, it returns a list of flat tables.
 }
 \examples{
 
@@ -38,7 +38,12 @@ tl <- ct |>
 \code{\link{star_database}}
 
 Other star database exportation functions: 
+\code{\link{as_csv_files}()},
 \code{\link{as_dm_class}()},
-\code{\link{as_tibble_list}()}
+\code{\link{as_multistar}()},
+\code{\link{as_rdb}()},
+\code{\link{as_tibble_list}()},
+\code{\link{as_xlsx_file}()},
+\code{\link{draw_tables}()}
 }
 \concept{star database exportation functions}

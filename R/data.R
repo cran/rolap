@@ -283,19 +283,6 @@
 #' from the original file, we have stored in the package a file with the same
 #' format as the original file but that includes only 1% of its data, selected at
 #' random.
-#' @examples
-#' # Defined by:
-#' file <-
-#'   system.file(
-#'     "extdata",
-#'     "mrs_122_us_cities_1962_2016.csv",
-#'     package = "rolap"
-#'   )
-#'
-#' \donttest{
-#' mrs_ft <-
-#'   read_flat_table_file(name = 'mrs', file, unknown_value = "Not available")
-#' }
 #'
 #' @family mrs example data
 #'
@@ -310,19 +297,6 @@
 #' from the original file, we have stored in the package a file with the same
 #' format as the original file but that includes only 0,1% of its data, selected at
 #' random to test the incremental refresh.
-#' @examples
-#' # Defined by:
-#' file <-
-#'   system.file(
-#'     "extdata",
-#'     "mrs_122_us_cities_1962_2016_new.csv",
-#'     package = "rolap"
-#'   )
-#'
-#' \donttest{
-#' mrs_ft_new <-
-#'   read_flat_table_file(name = 'mrs', file, unknown_value = "Not available")
-#' }
 #'
 #' @family mrs example data
 #'
@@ -353,12 +327,10 @@
 #'
 #' Multidimensional design with finest detail from the data available at the source.
 #'
-#' The development has been done in the vignette `vignette("v20-rdbms-dm")`.
-#'
-#' @family database example data
+#' @family debit card example data
 #'
 #' @format A `star_database`.
-#' @source \url{https://relational.fit.cvut.cz/dataset/CCS}
+#' @source \url{https://fit.cvut.cz/cs}
 "db_finest"
 
 
@@ -366,45 +338,28 @@
 #'
 #' Multidimensional design with a summary from the data available at the source.
 #'
-#' The development has been done in the vignette `vignette("v20-rdbms-dm")`.
-#'
-#' @family database example data
+#' @family debit card example data
 #'
 #' @format A `star_database`.
-#' @source \url{https://relational.fit.cvut.cz/dataset/CCS}
+#' @source \url{https://fit.cvut.cz/cs}
 "db_summary"
 
-#' Czech debit card company specialising on payments at gas stations (tables)
+
+#' Census of US States, by sex and age
 #'
-#' Data base in `dm` format with a summary from the data available at the source.
+#' Census of US States, by sex and age, obtained from the United States Census
+#' Bureau (USCB), American Community Survey (ACS). Obtained from the variables
+#' defined in reports, classifying the concepts according to the defined subjects.
 #'
-#' The development has been done in the vignette `vignette("v20-rdbms-dm")`.
+#' U.S. Census Bureau. “Government Units: US and State: Census Years 1942 - 2022.”
+#' Public Sector, PUB Public Sector Annual Surveys and Census of Governments,
+#' Table CG00ORG01, 2022,
+#' https://data.census.gov/table/GOVSTIMESERIES.CG00ORG01?q=census+state+year.
+#' Accessed on October 25, 2023.
 #'
-#' @examples
-#' # Defined by:
-#' \donttest{
-#' ccs_db <- RMariaDB::dbConnect(
-#'   RMariaDB::MariaDB(),
-#'   username = "guest",
-#'   password = "relational",
-#'   dbname = "ccs",
-#'   host = "relational.fit.cvut.cz"
-#' )
-#' ccs_dm <- dm::dm_from_con(ccs_db, learn_keys = TRUE)
-#' ccs_sel_dm <-
-#'   ccs_dm[c('transactions_1k', 'customers', 'gasstations', 'products')] |>
-#'   dm::dm_add_fk(transactions_1k, CustomerID, customers) |>
-#'   dm::dm_add_fk(transactions_1k, GasStationID, gasstations) |>
-#'   dm::dm_add_fk(transactions_1k, ProductID, products)
-#' transactions_db <- ccs_sel_dm |>
-#'   dm::collect()
-#' DBI::dbDisconnect(ccs_db)
-#' }
-#'
-#' @family database example data
-#'
-#' @format A `star_database`.
-#' @source \url{https://relational.fit.cvut.cz/dataset/CCS}
-"transactions_db"
+#' @format A `tibble`.
+#' @source
+#'   \url{https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-data.2021.html}
+"us_census_state"
 
 
