@@ -1,3 +1,8 @@
+# rolap 2.5.0
+* Geographic information query functions: `as_geolayer()`, `get_layer()`, `get_variables()`, `set_variables()`, `as_GeoPackage()`.
+* Functions to define geoattributes: `define_geoattribute()`, `check_geoattribute_geometry()`, `get_geoattributes()`, `get_geoattribute_geometries()`.
+* Geographic information processing functions: `coordinates_to_point()`, `get_layer_geometry()`, `summarize_layer()`, `get_point_geometry()`.
+
 # rolap 2.4.0
 * Functions to query a star database: `star_query()`, `select_fact()`, `select_dimension()`, `filter_dimension()` and `run_query()`.
 * Functions to deploy a star database in one or more relational databases: `deploy()`, `cancel_deployment()`, `get_deployment_names()`, `load_star_database()`.
