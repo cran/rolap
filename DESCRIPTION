@@ -1,9 +1,11 @@
 Package: rolap
 Title: Obtaining Star Databases from Flat Tables
-Version: 2.5.0
-Authors@R: 
-    person("Jose", "Samos", , "jsamos@ugr.es", role = c("aut", "cre", "cph"),
-           comment = c(ORCID = "0000-0002-4457-3439"))
+Version: 2.5.1
+Authors@R: c(
+    person("Jose", "Samos", , "jsamos@ugr.es", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-4457-3439")),
+    person("Universidad de Granada", role = "cph")
+  )
 Description: Data in multidimensional systems is obtained from operational
     systems and is transformed to adapt it to the new structure.
     Frequently, the operations to be performed aim to transform a flat
@@ -19,7 +21,8 @@ URL: https://josesamos.github.io/rolap/,
 BugReports: https://github.com/josesamos/rolap/issues
 Depends: R (>= 2.10)
 Imports: dm, dplyr, methods, purrr, readr, rlang, sf, snakecase,
-        tibble, tidyr, tidyselect, tools, utils, xlsx
+        starschemar, tibble, tidyr, tidyselect, tools, utils, when,
+        xlsx
 Suggests: DBI, dbplyr, DiagrammeR, DiagrammeRsvg, knitr, lubridate,
         magrittr, maps, pander, pivottabler, RMariaDB, rmarkdown,
         RSQLite, stringr, testthat (>= 3.0.0)
@@ -31,8 +34,9 @@ LazyData: true
 LazyDataCompression: xz
 RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2023-12-09 11:45:01 UTC; joses
-Author: Jose Samos [aut, cre, cph] (<https://orcid.org/0000-0002-4457-3439>)
+Packaged: 2024-01-10 09:56:17 UTC; joses
+Author: Jose Samos [aut, cre] (<https://orcid.org/0000-0002-4457-3439>),
+  Universidad de Granada [cph]
 Maintainer: Jose Samos <jsamos@ugr.es>
 Repository: CRAN
-Date/Publication: 2023-12-11 08:40:07 UTC
+Date/Publication: 2024-01-10 10:30:02 UTC

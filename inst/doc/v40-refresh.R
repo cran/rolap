@@ -25,7 +25,7 @@ db_dm |>
 ## ----eval=FALSE---------------------------------------------------------------
 #  file <-
 #    system.file(
-#      "extdata",
+#      "extdata/mrs",
 #      "mrs_122_us_cities_1962_2016_new.csv",
 #      package = "rolap"
 #    )

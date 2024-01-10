@@ -107,7 +107,8 @@ star_database_with_previous_operations <-
           facts = vector("list", length = length(schema$facts)),
           dimensions =  vector("list", length = length(schema$dimensions)),
           rpd = list(),
-          geo = list()
+          geo = list(),
+          scd = list()
         ),
         class = "star_database"
       )
@@ -143,6 +144,12 @@ star_database_with_previous_operations <-
       # include surrogate key in instances
       instances <- add_surrogate_key(db$dimensions[[d]], instances)
       keys <- c(keys, get_surrogate_key(db$dimensions[[d]]))
+      # scd ####
+      if (is_scd(schema$dimensions[[d]])) {
+        db$scd[[d]] <- schema$dimensions[[d]]
+      }
+
+      ##########
       # op <-
       #   add_operation(op, "define_dimension", dim_name, dim_attributes)
     }

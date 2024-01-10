@@ -1,3 +1,8 @@
+# rolap 2.5.1
+* Include scd structure for star database. 
+* New test data for scd.
+* Modify the cph field of the description.
+
 # rolap 2.5.0
 * Geographic information query functions: `as_geolayer()`, `get_layer()`, `get_variables()`, `set_variables()`, `as_GeoPackage()`.
 * Functions to define geoattributes: `define_geoattribute()`, `check_geoattribute_geometry()`, `get_geoattributes()`, `get_geoattribute_geometries()`.
