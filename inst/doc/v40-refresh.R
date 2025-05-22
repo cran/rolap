@@ -23,15 +23,15 @@ db_dm |>
 #  mrs_ft_new: Declared as a variable instead of reading from the file due to problem building macos-latest (release)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  file <-
-#    system.file(
-#      "extdata/mrs",
-#      "mrs_122_us_cities_1962_2016_new.csv",
-#      package = "rolap"
-#    )
-#  
-#  mrs_ft_new <-
-#    read_flat_table_file(name = 'mrs new', file)
+# file <-
+#   system.file(
+#     "extdata/mrs",
+#     "mrs_122_us_cities_1962_2016_new.csv",
+#     package = "rolap"
+#   )
+# 
+# mrs_ft_new <-
+#   read_flat_table_file(name = 'mrs new', file)
 
 ## ----results = "asis"---------------------------------------------------------
 ft <- mrs_ft_new |> 

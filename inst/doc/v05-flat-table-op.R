@@ -9,17 +9,17 @@ library(rolap)
 #  mrs_ft: Declared as a variable instead of reading from the file due to problem building macos-latest (release)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  library(rolap)
-#  
-#  file <-
-#    system.file(
-#      "extdata/mrs",
-#      "mrs_122_us_cities_1962_2016.csv",
-#      package = "rolap"
-#    )
-#  
-#  mrs_ft <-
-#    read_flat_table_file(name = 'mrs', file, unknown_value = "Not available")
+# library(rolap)
+# 
+# file <-
+#   system.file(
+#     "extdata/mrs",
+#     "mrs_122_us_cities_1962_2016.csv",
+#     package = "rolap"
+#   )
+# 
+# mrs_ft <-
+#   read_flat_table_file(name = 'mrs', file, unknown_value = "Not available")
 
 ## ----results = "asis"---------------------------------------------------------
 ft <- mrs_ft |> 

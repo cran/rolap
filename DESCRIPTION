@@ -1,6 +1,6 @@
 Package: rolap
 Title: Obtaining Star Databases from Flat Tables
-Version: 2.5.1
+Version: 2.5.2
 Authors@R: c(
     person("Jose", "Samos", , "jsamos@ugr.es", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-4457-3439")),
@@ -19,10 +19,9 @@ License: MIT + file LICENSE
 URL: https://josesamos.github.io/rolap/,
         https://github.com/josesamos/rolap
 BugReports: https://github.com/josesamos/rolap/issues
-Depends: R (>= 2.10)
+Depends: R (>= 4.1.0)
 Imports: dm, dplyr, methods, purrr, readr, rlang, sf, snakecase,
-        starschemar, tibble, tidyr, tidyselect, tools, utils, when,
-        xlsx
+        tibble, tidyr, tidyselect, tools, utils, when, xlsx
 Suggests: DBI, dbplyr, DiagrammeR, DiagrammeRsvg, knitr, lubridate,
         magrittr, maps, pander, pivottabler, RMariaDB, rmarkdown,
         RSQLite, stringr, testthat (>= 3.0.0)
@@ -32,11 +31,11 @@ Encoding: UTF-8
 Language: en-GB
 LazyData: true
 LazyDataCompression: xz
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 NeedsCompilation: no
-Packaged: 2024-01-10 09:56:17 UTC; joses
-Author: Jose Samos [aut, cre] (<https://orcid.org/0000-0002-4457-3439>),
+Packaged: 2025-05-21 10:48:29 UTC; jsamos
+Author: Jose Samos [aut, cre] (ORCID: <https://orcid.org/0000-0002-4457-3439>),
   Universidad de Granada [cph]
 Maintainer: Jose Samos <jsamos@ugr.es>
 Repository: CRAN
-Date/Publication: 2024-01-10 10:30:02 UTC
+Date/Publication: 2025-05-22 05:10:02 UTC

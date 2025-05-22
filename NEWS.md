@@ -1,3 +1,6 @@
+# rolap 2.5.2
+* Temporarily remove test due to conflict with another package.
+
 # rolap 2.5.1
 * Include scd structure for star database. 
 * New test data for scd.
